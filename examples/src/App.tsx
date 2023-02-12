@@ -1,9 +1,10 @@
 import { useState } from 'react'
+// import { EvtCtx } from './hooks'
 import { createEventContext } from './utils'
-
 export const EvtCtx = createEventContext({
   deep: { count: 0, hallo: 'world' },
   shadow: { count: 0, name: { wangzi: 0 } },
+  list: [{ name: 1 }],
 })
 
 function App() {
@@ -13,10 +14,12 @@ function App() {
   return (
     <div>
       <button onClick={() => setCount((count) => count + 1)}>count is {count}</button>
+      <hr />
       <EvtCtx.Provider>
         {/* <Hallo name={1}></Hallo> */}
         <Hallo name={2}></Hallo>
-        <SimpleCounter />
+        <Counter />
+        <Counter2 />
       </EvtCtx.Provider>
     </div>
   )
@@ -24,7 +27,6 @@ function App() {
 
 const Hallo = ({ name }) => {
   const [state, dispatch] = EvtCtx.useConsumer()
-
   console.log('render', Hallo.name + '-' + name)
 
   return (
@@ -56,29 +58,34 @@ const Hallo = ({ name }) => {
       >
         Hallo-{name}-shadow-count-{state.shadow.count}
       </button>
-
-      <hr />
       {JSON.stringify(state)}
 
-      {/* <textarea readOnly value={JSON.stringify(state, null, 1)} style={{ height: '20vh' }}></textarea> */}
+      <hr />
     </div>
   )
 }
 
-const SimpleCounter = () => {
-  console.log('render', SimpleCounter.name)
+const Counter = () => {
+  console.log('render', Counter.name)
   const [state, dispatch] = EvtCtx.useConsumer((s) => {
-    return {
-      ...s.shadow,
-    }
+    return { ...s.shadow }
   })
-
-  const [count, setCount] = useState(1)
 
   return (
     <div>
-      <button onClick={() => setCount(count + 1)}>counter{count}</button>
       <button onClick={() => dispatch((s) => s.shadow.name.wangzi++)}>shadow-name-{state.name.wangzi}</button>
+      {JSON.stringify(state)}
+    </div>
+  )
+}
+
+const Counter2 = () => {
+  console.log('render2', Counter.name)
+  const [state, dispatch] = EvtCtx.useConsumer('deep')
+
+  return (
+    <div>
+      {/* <button onClick={() => dispatch((s) => s.shadow.name.wangzi++)}>shadow-name-{state.name.wangzi}</button> */}
       {JSON.stringify(state)}
     </div>
   )

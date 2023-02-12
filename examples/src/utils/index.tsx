@@ -1,58 +1,90 @@
 import { createContext, useContext, useEffect, useRef, useState } from 'react'
-import { produce, produceWithPatches, enablePatches, Draft } from 'immer'
+import { produce } from 'immer'
 
-enablePatches()
-
-import { EventEmitter, useEventEmitter } from './useEventEmitter'
 import { shallowEqual } from './shallowEqual'
+import { FieldPathValues, Path } from './types'
 
-type DispatchRecipe<S> = (recipe: (draft: Draft<S>) => any) => void
+type DispatchRecipe<S> = (recipe: (draft: S) => any) => void
 type Unpacked<T> = T extends (...args: any[]) => infer R ? R : never
 
-const next = (state, selector) => {
-  if (selector) {
-    return selector(state)
-  } else {
-    return state
+type Subscription = (...args: any[]) => void
+type ContextRef<S> = { state: S; subscriptions: Set<Subscription>; getters: Map<string, (state: S) => any> }
+
+const next = (selector, state, getters) => {
+  if (!selector?.length) return state
+
+  if (typeof selector[0] === 'function') {
+    return selector[0](state)
   }
+
+  if (Array.isArray(selector)) {
+    return selector.map((path) => {
+      let get = getters.get(path)
+      if (!get) {
+        get = new Function('obj', 'return obj.' + path + ';')
+        getters.set(path, get)
+      }
+
+      return get(state)
+    })
+  }
+
+  return state
 }
 
 export function createEventContext<S extends Object>(initialState: S) {
-  const CONTEXT = createContext({} as EventEmitter<S>)
+  const CONTEXT = createContext({} as { current: ContextRef<S> })
 
   const Provider = ({ children }) => {
-    const event$ = useEventEmitter(initialState)
+    const ref = useRef(null as unknown as ContextRef<S>)
 
-    return <CONTEXT.Provider value={event$}>{children}</CONTEXT.Provider>
+    if (!ref.current) {
+      ref.current = {
+        state: initialState,
+        subscriptions: new Set(),
+        getters: new Map(),
+      }
+    }
+
+    return <CONTEXT.Provider value={ref}>{children}</CONTEXT.Provider>
   }
 
   function useConsumer(): [S, DispatchRecipe<S>]
-  function useConsumer<Selector extends (v: S) => any>(selector?: Selector): [Unpacked<Selector>, DispatchRecipe<S>]
-  function useConsumer(selector?) {
-    const event$ = useContext(CONTEXT)
+  function useConsumer<Selector extends (v: S) => any>(sel?: Selector): [Unpacked<Selector>, DispatchRecipe<S>]
+  function useConsumer<P extends Path<S>[]>(...sel: readonly [...P]): [[...FieldPathValues<S, P>], DispatchRecipe<S>]
 
-    const [state, setState] = useState(() => next(event$.state, selector))
+  function useConsumer(...selector) {
+    const context$ = useContext(CONTEXT)
+    const [local, setLocal] = useState(() => next(selector, context$.current.state, context$.current.getters))
 
-    event$.useSubscription((newState, patchesPath) => {
-      const nextState = next(newState, selector)
+    const subscription = useRef<Subscription>()
 
-      if (!shallowEqual(state, nextState)) {
-        setState(nextState)
+    subscription.current = () => {
+      const nextState = next(selector, context$.current.state, context$.current.getters)
+      if (!shallowEqual(local, nextState)) {
+        setLocal(nextState)
       }
-    })
+    }
+
+    useEffect(() => {
+      const subscribe = (v) => subscription.current!(v)
+
+      context$.current.subscriptions.add(subscribe)
+      return () => {
+        context$.current.subscriptions.delete(subscribe)
+      }
+    }, [])
 
     const dispatch = useRef((recipe) => {
-      console.clear()
-      const [nextState, patches] = produceWithPatches(event$.state, (draft) => {
+      const produced = produce(context$.current.state, (draft) => {
         recipe(draft)
       })
 
-      const patchesPath = patches.map((p) => p.path)
-
-      event$.emit(nextState, patchesPath)
+      context$.current.state = produced
+      context$.current.subscriptions.forEach((sub) => sub())
     })
 
-    return [state, dispatch.current] as const
+    return [local, dispatch.current] as const
   }
 
   return {
