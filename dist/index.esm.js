@@ -32,6 +32,9 @@ const shallowEqual = (state, nextState) => {
 const next = (selector, state, getters) => {
     if (!selector?.length)
         return state;
+    if (selector[0] === null) {
+        return null;
+    }
     if (typeof selector[0] === 'function') {
         return selector[0](state);
     }
@@ -39,7 +42,7 @@ const next = (selector, state, getters) => {
         return selector.map((path) => {
             let get = getters.get(path);
             if (!get) {
-                get = new Function('o', `return o.${path};`);
+                get = new Function('o', `return o.${path.replace(/.(\d+)./, '[$1].')};`);
                 getters.set(path, get);
             }
             return get(state);
@@ -84,6 +87,9 @@ function createEventContext(initialState) {
             context$.current.state = produced;
             context$.current.subscriptions.forEach((sub) => sub());
         });
+        if (selector[0] === null) {
+            return [dispatch.current];
+        }
         return [local[0], dispatch.current];
     }
     return {

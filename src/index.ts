@@ -13,6 +13,10 @@ type ContextRef<S> = { state: S; subscriptions: Set<Subscription>; getters: Map<
 const next = (selector, state, getters) => {
   if (!selector?.length) return state
 
+  if (selector[0] === null) {
+    return null
+  }
+
   if (typeof selector[0] === 'function') {
     return selector[0](state)
   }
@@ -21,7 +25,7 @@ const next = (selector, state, getters) => {
     return selector.map((path) => {
       let get = getters.get(path)
       if (!get) {
-        get = new Function('o', `return o.${path};`)
+        get = new Function('o', `return o.${path.replace(/.(\d+)./, '[$1].')};`)
         getters.set(path, get)
       }
 
@@ -50,11 +54,13 @@ export function createEventContext<S extends Object>(initialState: S) {
   }
 
   function useConsumer(): [S, DispatchRecipe<S>]
+  function useConsumer<Selector extends null>(sel: null): [DispatchRecipe<S>]
   function useConsumer<Selector extends (v: S) => any>(sel?: Selector): [Unpacked<Selector>, DispatchRecipe<S>]
   function useConsumer<P extends Path<S>[]>(...sel: readonly [...P]): [[...FieldPathValues<S, P>], DispatchRecipe<S>]
 
   function useConsumer(...selector) {
     const context$ = useContext(CONTEXT)
+
     const local = useState(() => next(selector, context$.current.state, context$.current.getters))
 
     const subscription = useRef<Subscription>()
@@ -83,6 +89,10 @@ export function createEventContext<S extends Object>(initialState: S) {
       context$.current.state = produced
       context$.current.subscriptions.forEach((sub) => sub())
     })
+
+    if (selector[0] === null) {
+      return [dispatch.current] as const
+    }
 
     return [local[0], dispatch.current] as const
   }

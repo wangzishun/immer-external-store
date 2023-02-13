@@ -1,92 +1,12 @@
-import { useState } from 'react'
-import { createEventContext } from 'react-event-context'
-export const EvtCtx = createEventContext({
-  deep: { count: 0, hallo: 'world' },
-  shadow: { count: 0, name: { wangzi: 0 } },
-  list: [{ name: 1 }],
-})
+import SimpleCounter from './SimpleCounter'
+import AdvancedCounter from './AdvancedCounter'
 
 function App() {
-  const [count, setCount] = useState(0)
-  console.info('render', App.name)
-
   return (
     <div>
-      <button onClick={() => setCount((count) => count + 1)}>count is {count}</button>
+      <SimpleCounter />
+      <AdvancedCounter />
       <hr />
-      <EvtCtx.Provider>
-        {/* <Hallo name={1}></Hallo> */}
-        <Hallo name={2}></Hallo>
-        <Counter />
-        <hr />
-        <Counter2 />
-      </EvtCtx.Provider>
-    </div>
-  )
-}
-
-const Hallo = ({ name }) => {
-  const [state, dispatch] = EvtCtx.useConsumer()
-  console.log('render', Hallo.name + '-' + name)
-
-  return (
-    <div>
-      <button
-        onClick={() =>
-          dispatch((s) => {
-            s.deep.hallo = Date.now().toString()
-          })
-        }
-      >
-        Hallo-{name}-{state.deep.hallo}
-      </button>
-      <button
-        onClick={() =>
-          dispatch((s) => {
-            s.deep.count++
-          })
-        }
-      >
-        Hallo-{name}-count-{state.deep.count}
-      </button>
-      <button
-        onClick={() =>
-          dispatch((s) => {
-            s.shadow.count++
-          })
-        }
-      >
-        Hallo-{name}-shadow-count-{state.shadow.count}
-      </button>
-      {JSON.stringify(state)}
-
-      <hr />
-    </div>
-  )
-}
-
-const Counter = () => {
-  console.log('render', Counter.name)
-  const [state, dispatch] = EvtCtx.useConsumer((s) => {
-    return { ...s.shadow }
-  })
-
-  return (
-    <div>
-      <button onClick={() => dispatch((s) => s.shadow.name.wangzi++)}>shadow-name-{state.name.wangzi}</button>
-      {JSON.stringify(state)}
-    </div>
-  )
-}
-
-const Counter2 = () => {
-  console.log('render', Counter.name, 2)
-  const [state, dispatch] = EvtCtx.useConsumer('deep')
-
-  return (
-    <div>
-      {/* <button onClick={() => dispatch((s) => s.shadow.name.wangzi++)}>shadow-name-{state.name.wangzi}</button> */}
-      {JSON.stringify(state)}
     </div>
   )
 }
