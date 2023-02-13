@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "rollup -c -w",
     "build": "rimraf dist && tsc --emitDeclarationOnly && rollup -c",
-    "test": "jest",
+    "test": "jest --passWithNoTests",
     "prerelease": "pnpm jest && pnpm build",
     "release": "standard-version"
   },
