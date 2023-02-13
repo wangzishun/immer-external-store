@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef, useState } from 'react'
+import { createContext, createElement, useContext, useEffect, useRef, useState } from 'react'
 import { produce } from 'immer'
 
 import { shallowEqual } from './shallowEqual'
@@ -17,11 +17,11 @@ const next = (selector, state, getters) => {
     return selector[0](state)
   }
 
-  if (Array.isArray(selector)) {
+  if (selector.length) {
     return selector.map((path) => {
       let get = getters.get(path)
       if (!get) {
-        get = new Function('obj', 'return obj.' + path + ';')
+        get = new Function('o', `return o.${path};`)
         getters.set(path, get)
       }
 
@@ -46,7 +46,7 @@ export function createEventContext<S extends Object>(initialState: S) {
       }
     }
 
-    return <CONTEXT.Provider value={ref}>{children}</CONTEXT.Provider>
+    return createElement(CONTEXT.Provider, { value: ref }, children)
   }
 
   function useConsumer(): [S, DispatchRecipe<S>]
@@ -55,14 +55,14 @@ export function createEventContext<S extends Object>(initialState: S) {
 
   function useConsumer(...selector) {
     const context$ = useContext(CONTEXT)
-    const [local, setLocal] = useState(() => next(selector, context$.current.state, context$.current.getters))
+    const local = useState(() => next(selector, context$.current.state, context$.current.getters))
 
     const subscription = useRef<Subscription>()
 
     subscription.current = () => {
       const nextState = next(selector, context$.current.state, context$.current.getters)
-      if (!shallowEqual(local, nextState)) {
-        setLocal(nextState)
+      if (!shallowEqual(local[0], nextState)) {
+        local[1](nextState)
       }
     }
 
@@ -84,7 +84,7 @@ export function createEventContext<S extends Object>(initialState: S) {
       context$.current.subscriptions.forEach((sub) => sub())
     })
 
-    return [local, dispatch.current] as const
+    return [local[0], dispatch.current] as const
   }
 
   return {

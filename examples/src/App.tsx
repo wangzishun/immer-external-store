@@ -1,6 +1,5 @@
 import { useState } from 'react'
-// import { EvtCtx } from './hooks'
-import { createEventContext } from './utils'
+import { createEventContext } from 'react-event-context'
 export const EvtCtx = createEventContext({
   deep: { count: 0, hallo: 'world' },
   shadow: { count: 0, name: { wangzi: 0 } },
@@ -19,6 +18,7 @@ function App() {
         {/* <Hallo name={1}></Hallo> */}
         <Hallo name={2}></Hallo>
         <Counter />
+        <hr />
         <Counter2 />
       </EvtCtx.Provider>
     </div>
@@ -80,7 +80,7 @@ const Counter = () => {
 }
 
 const Counter2 = () => {
-  console.log('render2', Counter.name)
+  console.log('render', Counter.name, 2)
   const [state, dispatch] = EvtCtx.useConsumer('deep')
 
   return (
