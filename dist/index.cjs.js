@@ -1,7 +1,7 @@
 'use strict';
 
-var react = require('react');
 var immer = require('immer');
+var withSelector = require('use-sync-external-store/shim/with-selector');
 
 /**
  *
@@ -31,71 +31,59 @@ const shallowEqual = (state, nextState) => {
     return true;
 };
 
-const next = (selector, state, getters) => {
-    if (!selector?.length)
-        return state;
-    if (selector[0] === null) {
-        return null;
-    }
-    if (typeof selector[0] === 'function') {
-        return selector[0](state);
-    }
-    if (selector.length) {
-        return selector.map((path) => {
-            let get = getters.get(path);
-            if (!get) {
-                get = new Function('o', `return o.${path.replace(/.(\d+)./, '[$1].')};`);
-                getters.set(path, get);
-            }
-            return get(state);
+const createStore = (initialState) => {
+    let state = initialState;
+    const listeners = new Set();
+    const getters = new Map();
+    const subscribe = (listener) => {
+        listeners.add(listener);
+        return () => listeners.delete(listener);
+    };
+    const dispatch = (recipe) => {
+        const produced = immer.produce(state, (draft) => {
+            recipe(draft);
         });
-    }
-    return state;
+        state = produced;
+        listeners.forEach((sub) => sub());
+    };
+    const selector = (sel) => {
+        if (!sel?.length)
+            return state;
+        if (sel[0] === null) {
+            return null;
+        }
+        if (typeof sel[0] === 'function') {
+            return sel[0](state);
+        }
+        if (sel.length) {
+            return sel.map((path) => {
+                let finder = getters.get(path);
+                if (!finder) {
+                    finder = new Function('o', `return o.${path.replace(/.(\d+)./, '[$1].')};`);
+                    getters.set(path, finder);
+                }
+                return finder(state);
+            });
+        }
+        return state;
+    };
+    return {
+        subscribe,
+        getSnapshot: () => state,
+        dispatch,
+        selector,
+    };
 };
 function createEventContext(initialState) {
-    const CONTEXT = react.createContext({});
-    const Provider = ({ children }) => {
-        const ref = react.useRef(null);
-        if (!ref.current) {
-            ref.current = {
-                state: initialState,
-                subscriptions: new Set(),
-                getters: new Map(),
-            };
+    const store = createStore(initialState);
+    function useConsumer(...sel) {
+        const local = withSelector.useSyncExternalStoreWithSelector(store.subscribe, store.getSnapshot, store.getSnapshot, (s) => store.selector(sel), shallowEqual);
+        if (sel[0] === null) {
+            return [store.dispatch];
         }
-        return react.createElement(CONTEXT.Provider, { value: ref }, children);
-    };
-    function useConsumer(...selector) {
-        const context$ = react.useContext(CONTEXT);
-        const local = react.useState(() => next(selector, context$.current.state, context$.current.getters));
-        const subscription = react.useRef();
-        subscription.current = () => {
-            const nextState = next(selector, context$.current.state, context$.current.getters);
-            if (!shallowEqual(local[0], nextState)) {
-                local[1](nextState);
-            }
-        };
-        react.useEffect(() => {
-            const subscribe = (v) => subscription.current(v);
-            context$.current.subscriptions.add(subscribe);
-            return () => {
-                context$.current.subscriptions.delete(subscribe);
-            };
-        }, []);
-        const dispatch = react.useRef((recipe) => {
-            const produced = immer.produce(context$.current.state, (draft) => {
-                recipe(draft);
-            });
-            context$.current.state = produced;
-            context$.current.subscriptions.forEach((sub) => sub());
-        });
-        if (selector[0] === null) {
-            return [dispatch.current];
-        }
-        return [local[0], dispatch.current];
+        return [local, store.dispatch];
     }
     return {
-        Provider,
         useConsumer,
     };
 }

@@ -9,7 +9,7 @@
 
 [![CI](https://github.com/wangzishun/react-event-context/actions/workflows/ci.yml/badge.svg)](https://github.com/wangzishun/react-event-context/actions/workflows/ci.yml)
 
-tiny state manager based on `publish-subscribe` \ [React Context](https://reactjs.org/docs/context.html) \ [immer](https://immerjs.github.io/immer/produce/#example). Four kinds of selectors are available, can be used in most scenarios,
+tiny state manager based on [useSyncExternalStoreWithSelector](https://beta.reactjs.org/reference/react/useSyncExternalStore) \ [immer](https://immerjs.github.io/immer/produce/#example). Four kinds of selectors are available, can be used in most scenarios,
 
 # Quick start with two examples
 
@@ -24,21 +24,27 @@ const CounterEvtCtx = createEventContext({
   hallo: 'hallo-world',
 })
 
-// [2]. Button use dispatch to change `count`
+// [2]. dispatch to change count
 function Button() {
-  const [dispatch] = CounterEvtCtx.useConsumer(null) // null means subscribe nothing
+  console.log(Button.name)
+
+  // null means subscribe nothing, only dispatch
+  const [dispatch] = CounterEvtCtx.useConsumer(null)
   const increment = () => dispatch((draft) => draft.count++)
 
   return <button onClick={increment}>count increment</button>
 }
 
-// [3]. Count subscribe `count`, and rerender when count changed
+// [3]. subscribe count, and rerender when count changed
 function Count() {
-  const [count, dispatch] = CounterEvtCtx.useConsumer('count') // subscribe count
+  console.log(Count.name)
+
+  // subscribe count, with dispatch
+  const [count, dispatch] = CounterEvtCtx.useConsumer('count')
   return <span>{count}</span>
 }
 
-// [4]. HalloWorld subscribe hallo, and rerender when hallo changed
+// [4]. subscribe hallo, and rerender when hallo changed
 function HalloWorld() {
   console.log('HalloWorld will not rerender when count changed')
 
@@ -48,11 +54,11 @@ function HalloWorld() {
 
 export default function SimpleCounter() {
   return (
-    <CounterEvtCtx.Provider>
+    <div>
       <Count />
       <Button />
       <HalloWorld />
-    </CounterEvtCtx.Provider>
+    </div>
   )
 }
 ```
@@ -71,7 +77,7 @@ const CounterEvtCtx = createEventContext({
   },
 })
 
-// [*] use `StringPath` subscribe multiple state
+// use `StringPath` subscribe multiple state
 function Count() {
   console.log(Count.name)
 
@@ -80,15 +86,15 @@ function Count() {
   return <pre>{JSON.stringify(state, null, 2)}</pre>
 }
 
-// [*] dispatch based on immer.produce
 function Increment() {
+  console.log(Increment.name)
   const [dispatch] = CounterEvtCtx.useConsumer(null)
-  const increment = () => dispatch((draft) => draft.count++)
+  const increment = () => dispatch((draft) => draft.count++) // dispatch based on immer.produce
 
   return <button onClick={increment}>click to increment count</button>
 }
 
-// [*] use `Selector` to subscribe partial state
+// use `Selector` to subscribe partial state
 function OnePiece() {
   console.log(OnePiece.name)
 
@@ -110,25 +116,28 @@ function OnePiece() {
 }
 
 function OnePieceSorter() {
+  console.log(OnePieceSorter.name)
   const [dispatch] = CounterEvtCtx.useConsumer(null)
   return <button onClick={() => dispatch((draft) => draft.list.reverse())}>click to reverse list</button>
 }
 
-// [*] subscribe all state
+// subscribe all state
 function AllState() {
+  console.log(AllState.name)
+
   const [state] = CounterEvtCtx.useConsumer()
   return <pre>{JSON.stringify(state, null, 2)}</pre>
 }
 
 export default function AdvancedCounter() {
   return (
-    <CounterEvtCtx.Provider>
+    <div>
       <Count />
       <Increment />
       <OnePiece />
       <OnePieceSorter />
       <AllState />
-    </CounterEvtCtx.Provider>
+    </div>
   )
 }
 ```
@@ -153,12 +162,8 @@ pnpm add react-event-context
 
 ```ts
 import { createEventContext } from 'react-event-context'
-const { Provider, useConsumer } = createEventContext(YourStateObject)
+const { useConsumer } = createEventContext(YourStateObject)
 ```
-
-### `Provider`
-
-Please use provider to wrap your component !!! I have tried to give up the provider, but the hot update during development will have closure problems.
 
 ### `useConsumer`
 

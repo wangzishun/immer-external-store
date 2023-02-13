@@ -1,19 +1,7 @@
-/// <reference types="react" />
 import { FieldPathValues, Path } from './types';
-type DispatchRecipe<S> = (recipe: (draft: S) => any) => void;
+type DispatchRecipe<S> = (recipe: (draft: S) => any) => any;
 type Unpacked<T> = T extends (...args: any[]) => infer R ? R : never;
-type Subscription = (...args: any[]) => void;
-type ContextRef<S> = {
-    state: S;
-    subscriptions: Set<Subscription>;
-    getters: Map<string, (state: S) => any>;
-};
 export declare function createEventContext<S extends Object>(initialState: S): {
-    Provider: ({ children }: {
-        children: any;
-    }) => import("react").FunctionComponentElement<import("react").ProviderProps<{
-        current: ContextRef<S>;
-    }>>;
     useConsumer: {
         (): [S, DispatchRecipe<S>];
         <Selector extends null>(sel: null): [DispatchRecipe<S>];

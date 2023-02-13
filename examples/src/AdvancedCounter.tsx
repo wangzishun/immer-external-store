@@ -19,6 +19,7 @@ function Count() {
 }
 
 function Increment() {
+  console.log(Increment.name)
   const [dispatch] = CounterEvtCtx.useConsumer(null)
   const increment = () => dispatch((draft) => draft.count++) // dispatch based on immer.produce
 
@@ -47,24 +48,27 @@ function OnePiece() {
 }
 
 function OnePieceSorter() {
+  console.log(OnePieceSorter.name)
   const [dispatch] = CounterEvtCtx.useConsumer(null)
   return <button onClick={() => dispatch((draft) => draft.list.reverse())}>click to reverse list</button>
 }
 
 // subscribe all state
 function AllState() {
+  console.log(AllState.name)
+
   const [state] = CounterEvtCtx.useConsumer()
   return <pre>{JSON.stringify(state, null, 2)}</pre>
 }
 
 export default function AdvancedCounter() {
   return (
-    <CounterEvtCtx.Provider>
+    <div>
       <Count />
       <Increment />
       <OnePiece />
       <OnePieceSorter />
       <AllState />
-    </CounterEvtCtx.Provider>
+    </div>
   )
 }
