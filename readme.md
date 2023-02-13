@@ -1,5 +1,7 @@
 # react-immer-store
 
+This is a tiny state manager based on immer and useSyncExternalStore. Provide four kinds of selector, can be used in most scenarios,
+
 <a href="https://npmjs.org/package/react-immer-store">
   <img alt="NPM version" src="https://img.shields.io/npm/v/react-immer-store.svg?style=flat-square">
 </a>
@@ -8,8 +10,6 @@
 </a>
 
 [![CI](https://github.com/wangzishun/react-immer-store/actions/workflows/ci.yml/badge.svg)](https://github.com/wangzishun/react-immer-store/actions/workflows/ci.yml)
-
-tiny state manager based on [useSyncExternalStoreWithSelector](https://beta.reactjs.org/reference/react/useSyncExternalStore) \ [immer](https://immerjs.github.io/immer/produce/#example). Four kinds of selectors are available, can be used in most scenarios,
 
 # Quick start with two examples
 
