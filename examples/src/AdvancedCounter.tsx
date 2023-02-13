@@ -1,6 +1,6 @@
-import { createEventContext } from 'react-event-context'
+import { createImmerStore } from 'react-immer-store'
 
-const CounterEvtCtx = createEventContext({
+const CounterImmerStore = createImmerStore({
   count: 0,
   hallo: 'hallo-world',
   list: [{ name: 'luffy' }, { name: 'mingo' }, { name: 'zoro' }],
@@ -14,13 +14,13 @@ function Count() {
   console.log(Count.name)
 
   // try ts intellicense on `StringPath` `data`
-  const [state, dispatch] = CounterEvtCtx.useConsumer('hallo', 'count', 'list.2.name')
+  const [state, dispatch] = CounterImmerStore.useConsumer('hallo', 'count', 'list.2.name')
   return <pre>{JSON.stringify(state, null, 2)}</pre>
 }
 
 function Increment() {
   console.log(Increment.name)
-  const [dispatch] = CounterEvtCtx.useConsumer(null)
+  const [dispatch] = CounterImmerStore.useConsumer(null)
   const increment = () => dispatch((draft) => draft.count++) // dispatch based on immer.produce
 
   return <button onClick={increment}>click to increment count</button>
@@ -31,7 +31,7 @@ function OnePiece() {
   console.log(OnePiece.name)
 
   // try ts intellicense on `state` `data`
-  const [data, dispatch] = CounterEvtCtx.useConsumer((state) => ({
+  const [data, dispatch] = CounterImmerStore.useConsumer((state) => ({
     list: state.list,
     place: state.nested.place,
   }))
@@ -49,7 +49,7 @@ function OnePiece() {
 
 function OnePieceSorter() {
   console.log(OnePieceSorter.name)
-  const [dispatch] = CounterEvtCtx.useConsumer(null)
+  const [dispatch] = CounterImmerStore.useConsumer(null)
   return <button onClick={() => dispatch((draft) => draft.list.reverse())}>click to reverse list</button>
 }
 
@@ -57,7 +57,7 @@ function OnePieceSorter() {
 function AllState() {
   console.log(AllState.name)
 
-  const [state] = CounterEvtCtx.useConsumer()
+  const [state] = CounterImmerStore.useConsumer()
   return <pre>{JSON.stringify(state, null, 2)}</pre>
 }
 

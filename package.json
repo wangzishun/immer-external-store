@@ -1,5 +1,5 @@
 {
-  "name": "react-event-context",
+  "name": "react-immer-store",
   "version": "0.0.1",
   "description": "",
   "main": "dist/index.cjs.js",
@@ -16,9 +16,11 @@
   "type": "module",
   "author": "wangzishun",
   "license": "ISC",
+  "dependencies": {
+    "use-sync-external-store": "^1.2.0"
+  },
   "peerDependencies": {
-    "immer": ">=9.0",
-    "react": ">=16.8"
+    "immer": ">=9.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.12",
@@ -42,8 +44,7 @@
     "rollup": "^3.15.0",
     "standard-version": "^9.5.0",
     "tslib": "^2.5.0",
-    "typescript": "^4.9.5",
-    "use-sync-external-store": "^1.2.0"
+    "typescript": "^4.9.5"
   },
   "keywords": [
     "react",
@@ -54,6 +55,6 @@
     "context"
   ],
   "bugs": {
-    "url": "https://github.com/wangzishun/react-event-context/issues"
+    "url": "https://github.com/wangzishun/react-immer-store/issues"
   }
 }

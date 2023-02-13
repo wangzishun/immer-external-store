@@ -72,7 +72,7 @@ const createStore = (initialState) => {
         selector,
     };
 };
-function createEventContext(initialState) {
+function createImmerStore(initialState) {
     const store = createStore(initialState);
     function useConsumer(...sel) {
         const local = useSyncExternalStoreWithSelector(store.subscribe, store.getSnapshot, store.getSnapshot, (s) => store.selector(sel), shallowEqual);
@@ -86,4 +86,4 @@ function createEventContext(initialState) {
     };
 }
 
-export { createEventContext };
+export { createImmerStore };

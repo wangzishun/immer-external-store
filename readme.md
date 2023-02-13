@@ -1,13 +1,13 @@
-# react-event-context
+# react-immer-store
 
-<a href="https://npmjs.org/package/react-event-context">
-  <img alt="NPM version" src="https://img.shields.io/npm/v/react-event-context.svg?style=flat-square">
+<a href="https://npmjs.org/package/react-immer-store">
+  <img alt="NPM version" src="https://img.shields.io/npm/v/react-immer-store.svg?style=flat-square">
 </a>
-<a href="https://npmjs.org/package/react-event-context">
-  <img alt="NPM downloads" src="https://img.shields.io/npm/dm/react-event-context.svg?style=flat-square">
+<a href="https://npmjs.org/package/react-immer-store">
+  <img alt="NPM downloads" src="https://img.shields.io/npm/dm/react-immer-store.svg?style=flat-square">
 </a>
 
-[![CI](https://github.com/wangzishun/react-event-context/actions/workflows/ci.yml/badge.svg)](https://github.com/wangzishun/react-event-context/actions/workflows/ci.yml)
+[![CI](https://github.com/wangzishun/react-immer-store/actions/workflows/ci.yml/badge.svg)](https://github.com/wangzishun/react-immer-store/actions/workflows/ci.yml)
 
 tiny state manager based on [useSyncExternalStoreWithSelector](https://beta.reactjs.org/reference/react/useSyncExternalStore) \ [immer](https://immerjs.github.io/immer/produce/#example). Four kinds of selectors are available, can be used in most scenarios,
 
@@ -16,10 +16,10 @@ tiny state manager based on [useSyncExternalStoreWithSelector](https://beta.reac
 ## Simple Counter example
 
 ```tsx
-import { createEventContext } from 'react-event-context'
+import { createImmerStore } from 'react-immer-store'
 
-// [1]. create event context
-const CounterEvtCtx = createEventContext({
+// [1]. create immer store
+const CounterImmerStore = createImmerStore({
   count: 0,
   hallo: 'hallo-world',
 })
@@ -29,7 +29,7 @@ function Button() {
   console.log(Button.name)
 
   // null means subscribe nothing, only dispatch
-  const [dispatch] = CounterEvtCtx.useConsumer(null)
+  const [dispatch] = CounterImmerStore.useConsumer(null)
   const increment = () => dispatch((draft) => draft.count++)
 
   return <button onClick={increment}>count increment</button>
@@ -40,7 +40,7 @@ function Count() {
   console.log(Count.name)
 
   // subscribe count, with dispatch
-  const [count, dispatch] = CounterEvtCtx.useConsumer('count')
+  const [count, dispatch] = CounterImmerStore.useConsumer('count')
   return <span>{count}</span>
 }
 
@@ -48,7 +48,7 @@ function Count() {
 function HalloWorld() {
   console.log('HalloWorld will not rerender when count changed')
 
-  const [hallo, dispatch] = CounterEvtCtx.useConsumer('hallo')
+  const [hallo, dispatch] = CounterImmerStore.useConsumer('hallo')
   return <b>{hallo}</b>
 }
 
@@ -66,9 +66,9 @@ export default function SimpleCounter() {
 ## Advanced example
 
 ```tsx
-import { createEventContext } from 'react-event-context'
+import { createImmerStore } from 'react-immer-store'
 
-const CounterEvtCtx = createEventContext({
+const CounterImmerStore = createImmerStore({
   count: 0,
   hallo: 'hallo-world',
   list: [{ name: 'luffy' }, { name: 'mingo' }, { name: 'zoro' }],
@@ -82,13 +82,13 @@ function Count() {
   console.log(Count.name)
 
   // try ts intellicense on `StringPath` `data`
-  const [state, dispatch] = CounterEvtCtx.useConsumer('hallo', 'count', 'list.2.name')
+  const [state, dispatch] = CounterImmerStore.useConsumer('hallo', 'count', 'list.2.name')
   return <pre>{JSON.stringify(state, null, 2)}</pre>
 }
 
 function Increment() {
   console.log(Increment.name)
-  const [dispatch] = CounterEvtCtx.useConsumer(null)
+  const [dispatch] = CounterImmerStore.useConsumer(null)
   const increment = () => dispatch((draft) => draft.count++) // dispatch based on immer.produce
 
   return <button onClick={increment}>click to increment count</button>
@@ -99,7 +99,7 @@ function OnePiece() {
   console.log(OnePiece.name)
 
   // try ts intellicense on `state` `data`
-  const [data, dispatch] = CounterEvtCtx.useConsumer((state) => ({
+  const [data, dispatch] = CounterImmerStore.useConsumer((state) => ({
     list: state.list,
     place: state.nested.place,
   }))
@@ -117,7 +117,7 @@ function OnePiece() {
 
 function OnePieceSorter() {
   console.log(OnePieceSorter.name)
-  const [dispatch] = CounterEvtCtx.useConsumer(null)
+  const [dispatch] = CounterImmerStore.useConsumer(null)
   return <button onClick={() => dispatch((draft) => draft.list.reverse())}>click to reverse list</button>
 }
 
@@ -125,7 +125,7 @@ function OnePieceSorter() {
 function AllState() {
   console.log(AllState.name)
 
-  const [state] = CounterEvtCtx.useConsumer()
+  const [state] = CounterImmerStore.useConsumer()
   return <pre>{JSON.stringify(state, null, 2)}</pre>
 }
 
@@ -145,24 +145,24 @@ export default function AdvancedCounter() {
 ## Installation
 
 ```sh
-npm i react-event-context
+npm i react-immer-store
 ```
 
 ```sh
-yarn add react-event-context
+yarn add react-immer-store
 ```
 
 ```sh
-pnpm add react-event-context
+pnpm add react-immer-store
 ```
 
 ## API
 
-### `createEventContext`
+### `createImmerStore`
 
 ```ts
-import { createEventContext } from 'react-event-context'
-const { useConsumer } = createEventContext(YourStateObject)
+import { createImmerStore } from 'react-immer-store'
+const { useConsumer } = createImmerStore(YourStateObject)
 ```
 
 ### `useConsumer`
@@ -208,7 +208,7 @@ dispatch((draft) => ({ hallo: 'world' }))
 
 ## Contributing
 
-If you find a bug, please [create an issue](https://github.com/wangzishun/react-event-context/issues/new) providing instructions to reproduce it. It's always very appreciable if you find the time to fix it. In this case, please [submit a PR](https://github.com/wangzishun/react-event-context/pulls).
+If you find a bug, please [create an issue](https://github.com/wangzishun/react-immer-store/issues/new) providing instructions to reproduce it. It's always very appreciable if you find the time to fix it. In this case, please [submit a PR](https://github.com/wangzishun/react-immer-store/pulls).
 
 If you're a beginner, extremely grateful for your attention and contribution.
 

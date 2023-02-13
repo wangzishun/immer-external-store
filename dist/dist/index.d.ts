@@ -1,7 +1,7 @@
 import { FieldPathValues, Path } from './types';
 type DispatchRecipe<S> = (recipe: (draft: S) => any) => any;
 type Unpacked<T> = T extends (...args: any[]) => infer R ? R : never;
-export declare function createEventContext<S extends Object>(initialState: S): {
+export declare function createImmerStore<S extends Object>(initialState: S): {
     useConsumer: {
         (): [S, DispatchRecipe<S>];
         <Selector extends null>(sel: null): [DispatchRecipe<S>];
