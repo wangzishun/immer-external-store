@@ -14,7 +14,7 @@
     "release": "standard-version"
   },
   "author": "wangzishun",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "use-sync-external-store": "^1.2.0"
   },
@@ -51,9 +51,14 @@
     "manager",
     "immer",
     "external",
-    "store"
+    "store",
+    "状态管理"
   ],
   "bugs": {
     "url": "https://github.com/wangzishun/immer-external-store/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wangzishun/immer-external-store"
   }
 }
