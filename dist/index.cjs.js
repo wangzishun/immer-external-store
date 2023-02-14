@@ -50,9 +50,12 @@ const createStore = (initialState) => {
         listeners.add(listener);
         return () => listeners.delete(listener);
     };
-    const dispatch = (recipe) => {
+    const dispatch = (recipeOrPartial) => {
         state = immer.produce(state, (draft) => {
-            recipe(draft);
+            if (typeof recipeOrPartial === 'function') {
+                recipeOrPartial(draft);
+            }
+            Object.assign(draft, recipeOrPartial);
         });
         listeners.forEach((sub) => sub());
     };

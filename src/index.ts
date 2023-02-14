@@ -5,7 +5,8 @@ import { useSyncExternalStoreWithSelector } from 'use-sync-external-store/shim/w
 import { arrayShallowEqual } from './shallowEqual'
 import { Path, PathValue } from './types'
 
-type DispatchRecipe<S> = (recipe: (draft: S) => any) => any
+type Recipe<S> = (draft: S) => any
+type Dispatch<S> = (recipeOrPartial: Recipe<S> | Partial<S>) => any
 type Unpacked<T> = T extends (...args: any[]) => infer R ? R : never
 
 type Listener = (...args: any[]) => void
@@ -21,9 +22,12 @@ const createStore = <S extends Object>(initialState: S) => {
     return () => listeners.delete(listener)
   }
 
-  const dispatch: DispatchRecipe<S> = (recipe) => {
-    state = produce(state, (draft) => {
-      recipe(draft as any)
+  const dispatch: Dispatch<S> = (recipeOrPartial) => {
+    state = produce(state, (draft: any) => {
+      if (typeof recipeOrPartial === 'function') {
+        recipeOrPartial(draft)
+      }
+      Object.assign(draft, recipeOrPartial)
     })
 
     listeners.forEach((sub) => sub())
@@ -61,7 +65,7 @@ const createStore = <S extends Object>(initialState: S) => {
 export function createImmerExternalStore<S extends Object>(initialState: S) {
   const { subscribe, getSnapshot, selectorImplement, dispatch } = createStore(initialState)
 
-  function useState(): [S, DispatchRecipe<S>]
+  function useState(): [S, Dispatch<S>]
   function useState<FuncSel extends (v: S) => any, PathSel extends Path<S>, Sels extends Array<FuncSel | PathSel>>(
     ...sels: [...Sels]
   ): [
@@ -72,7 +76,7 @@ export function createImmerExternalStore<S extends Object>(initialState: S) {
         ? PathValue<S, Sels[K]>
         : never
     },
-    DispatchRecipe<S>,
+    Dispatch<S>,
   ]
 
   function useState(...selectors) {
@@ -92,3 +96,4 @@ export function createImmerExternalStore<S extends Object>(initialState: S) {
     dispatch,
   }
 }
+

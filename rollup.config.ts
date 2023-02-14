@@ -1,3 +1,5 @@
+import { defineConfig } from 'rollup'
+
 import { babel } from '@rollup/plugin-babel'
 import typescript from '@rollup/plugin-typescript'
 
@@ -11,7 +13,7 @@ const external = Object.keys(pkg.peerDependencies)
 
 const extensions = ['.ts']
 
-const config = {
+const config = defineConfig({
   input: 'src/index.ts',
 
   output: [
@@ -31,9 +33,9 @@ const config = {
     // }),
     // terser(),
   ],
-}
+})
 
-const unpkg = {
+const unpkg = defineConfig({
   input: 'src/index.ts',
   output: [
     {
@@ -59,6 +61,6 @@ const unpkg = {
     }),
     terser(),
   ],
-}
+})
 
 export default [config, unpkg]

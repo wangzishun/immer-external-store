@@ -1,19 +1,18 @@
 {
   "name": "immer-external-store",
   "version": "0.0.3",
-  "description": "",
+  "description": "A tiny faster easier react state manager, based immer and useSyncExternalStore, provide two kinds of selector and friendly typescript support.",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
   "unpkg": "dist/index.umd.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "dev": "rollup -c -w",
-    "build": "rimraf dist && tsc --emitDeclarationOnly && rollup -c",
+    "dev": "rollup -w -c rollup.config.ts --configPlugin typescript",
+    "build": "rimraf dist && rollup -c rollup.config.ts --configPlugin typescript",
     "test": "jest --passWithNoTests",
     "prerelease": "standard-version --prerelease",
     "release": "standard-version"
   },
-  "type": "module",
   "author": "wangzishun",
   "license": "ISC",
   "dependencies": {

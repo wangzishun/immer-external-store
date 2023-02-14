@@ -212,15 +212,17 @@ Determine the return tuple according to the input parameters, `[...state, dispat
 
 ## `dispatch`
 
-It is based on `immer.produce`. [if you don't know what immer is, this way please](https://immerjs.github.io/immer/produce/#example)
+It is based `immer.produce`. [if you don't know what immer is, this way please](https://immerjs.github.io/immer/produce/#example)
 
 ```ts
-dispatch((draft) => draft.count++) // do anything you want
+store.dispatch((draft) => draft.count++) // do anything you want, recommend this way
+
+store.dispatch({ count: 11 }) // based Object.assign, only 1 depth
 ```
 
 ```ts
 // unlike immer, it is not possible to perform state replace by return value. only revise draft is effective
-dispatch((draft) => ({ hallo: 'world' }))
+store.dispatch((draft) => ({ hallo: 'world' }))
 ```
 
 # Contributing
