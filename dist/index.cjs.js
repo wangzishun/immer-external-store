@@ -74,7 +74,7 @@ const createStore = (initialState) => {
         selector,
     };
 };
-function createImmerStore(initialState) {
+function createImmerExternalStore(initialState) {
     const store = createStore(initialState);
     function useConsumer(...sel) {
         const local = withSelector.useSyncExternalStoreWithSelector(store.subscribe, store.getSnapshot, store.getSnapshot, (s) => store.selector(sel), shallowEqual);
@@ -88,4 +88,4 @@ function createImmerStore(initialState) {
     };
 }
 
-exports.createImmerStore = createImmerStore;
+exports.createImmerExternalStore = createImmerExternalStore;

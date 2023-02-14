@@ -64,7 +64,7 @@ const createStore = <S extends Object>(initialState: S) => {
   }
 }
 
-export function createImmerStore<S extends Object>(initialState: S) {
+export function createImmerExternalStore<S extends Object>(initialState: S) {
   const store = createStore(initialState)
 
   function useConsumer(): [S, DispatchRecipe<S>]

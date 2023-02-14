@@ -1,7 +1,7 @@
-import { createImmerStore } from 'react-immer-store'
+import { createImmerExternalStore } from 'immer-external-store'
 
 // [1]. create immer store
-const CounterImmerStore = createImmerStore({
+const CounterStore = createImmerExternalStore({
   count: 0,
   hallo: 'hallo-world',
 })
@@ -11,7 +11,7 @@ function Button() {
   console.log(Button.name)
 
   // null means subscribe nothing, only dispatch
-  const [dispatch] = CounterImmerStore.useConsumer(null)
+  const [dispatch] = CounterStore.useConsumer(null)
   const increment = () => dispatch((draft) => draft.count++)
 
   return <button onClick={increment}>count increment</button>
@@ -22,7 +22,7 @@ function Count() {
   console.log(Count.name)
 
   // subscribe count, with dispatch
-  const [count, dispatch] = CounterImmerStore.useConsumer('count')
+  const [count, dispatch] = CounterStore.useConsumer('count')
   return <span>{count}</span>
 }
 
@@ -30,7 +30,7 @@ function Count() {
 function HalloWorld() {
   console.log('HalloWorld will not rerender when count changed')
 
-  const [hallo, dispatch] = CounterImmerStore.useConsumer('hallo')
+  const [hallo, dispatch] = CounterStore.useConsumer('hallo')
   return <b>{hallo}</b>
 }
 

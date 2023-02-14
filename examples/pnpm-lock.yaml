@@ -7,7 +7,7 @@ specifiers:
   immer: ^9.0.19
   react: ^18.2.0
   react-dom: ^18.2.0
-  react-immer-store: latest
+  immer-external-store: latest
   rollup-plugin-visualizer: ^5.9.0
   typescript: ^4.9.3
   use-sync-external-store: ^1.2.0
@@ -17,7 +17,7 @@ dependencies:
   immer: 9.0.19
   react: 18.2.0
   react-dom: 18.2.0_react@18.2.0
-  react-immer-store: 0.0.0_immer@9.0.19+react@18.2.0
+  immer-external-store: 0.0.0_immer@9.0.19+react@18.2.0
   use-sync-external-store: 1.2.0_react@18.2.0
 
 devDependencies:
@@ -834,7 +834,7 @@ packages:
       scheduler: 0.23.0
     dev: false
 
-  /react-immer-store/0.0.0_immer@9.0.19+react@18.2.0:
+  /immer-external-store/0.0.0_immer@9.0.19+react@18.2.0:
     resolution: {integrity: sha512-o9h2j0jC+uW00bLur6IAVPOCgdXzM0MTlt2l8qIeZGT4Ls06byJfXeUGeGJEMmXResbsmUmY2IFOnkvsFzy+0w==}
     peerDependencies:
       immer: '>=9.0'

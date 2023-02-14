@@ -1,25 +1,25 @@
-# react-immer-store
+# immer-external-store
 
 This is a tiny state manager based on immer and useSyncExternalStore. Provide four kinds of selector, can be used in most scenarios,
 
-<a href="https://npmjs.org/package/react-immer-store">
-  <img alt="NPM version" src="https://img.shields.io/npm/v/react-immer-store.svg?style=flat-square">
+<a href="https://npmjs.org/package/immer-external-store">
+  <img alt="NPM version" src="https://img.shields.io/npm/v/immer-external-store.svg?style=flat-square">
 </a>
-<a href="https://npmjs.org/package/react-immer-store">
-  <img alt="NPM downloads" src="https://img.shields.io/npm/dm/react-immer-store.svg?style=flat-square">
+<a href="https://npmjs.org/package/immer-external-store">
+  <img alt="NPM downloads" src="https://img.shields.io/npm/dm/immer-external-store.svg?style=flat-square">
 </a>
 
-[![CI](https://github.com/wangzishun/react-immer-store/actions/workflows/ci.yml/badge.svg)](https://github.com/wangzishun/react-immer-store/actions/workflows/ci.yml)
+[![CI](https://github.com/wangzishun/immer-external-store/actions/workflows/ci.yml/badge.svg)](https://github.com/wangzishun/immer-external-store/actions/workflows/ci.yml)
 
 # Quick start with two examples
 
 ## Simple Counter example
 
 ```tsx
-import { createImmerStore } from 'react-immer-store'
+import { createImmerExternalStore } from 'immer-external-store'
 
 // [1]. create immer store
-const CounterImmerStore = createImmerStore({
+const CounterStore = createImmerExternalStore({
   count: 0,
   hallo: 'hallo-world',
 })
@@ -29,7 +29,7 @@ function Button() {
   console.log(Button.name)
 
   // null means subscribe nothing, only dispatch
-  const [dispatch] = CounterImmerStore.useConsumer(null)
+  const [dispatch] = CounterStore.useConsumer(null)
   const increment = () => dispatch((draft) => draft.count++)
 
   return <button onClick={increment}>count increment</button>
@@ -40,7 +40,7 @@ function Count() {
   console.log(Count.name)
 
   // subscribe count, with dispatch
-  const [count, dispatch] = CounterImmerStore.useConsumer('count')
+  const [count, dispatch] = CounterStore.useConsumer('count')
   return <span>{count}</span>
 }
 
@@ -48,7 +48,7 @@ function Count() {
 function HalloWorld() {
   console.log('HalloWorld will not rerender when count changed')
 
-  const [hallo, dispatch] = CounterImmerStore.useConsumer('hallo')
+  const [hallo, dispatch] = CounterStore.useConsumer('hallo')
   return <b>{hallo}</b>
 }
 
@@ -66,9 +66,9 @@ export default function SimpleCounter() {
 ## Advanced example
 
 ```tsx
-import { createImmerStore } from 'react-immer-store'
+import { createImmerExternalStore } from 'immer-external-store'
 
-const CounterImmerStore = createImmerStore({
+const CounterStore = createImmerExternalStore({
   count: 0,
   hallo: 'hallo-world',
   list: [{ name: 'luffy' }, { name: 'mingo' }, { name: 'zoro' }],
@@ -82,13 +82,13 @@ function Count() {
   console.log(Count.name)
 
   // try ts intellicense on `StringPath` `data`
-  const [state, dispatch] = CounterImmerStore.useConsumer('hallo', 'count', 'list.2.name')
+  const [state, dispatch] = CounterStore.useConsumer('hallo', 'count', 'list.2.name')
   return <pre>{JSON.stringify(state, null, 2)}</pre>
 }
 
 function Increment() {
   console.log(Increment.name)
-  const [dispatch] = CounterImmerStore.useConsumer(null)
+  const [dispatch] = CounterStore.useConsumer(null)
   const increment = () => dispatch((draft) => draft.count++) // dispatch based on immer.produce
 
   return <button onClick={increment}>click to increment count</button>
@@ -99,7 +99,7 @@ function OnePiece() {
   console.log(OnePiece.name)
 
   // try ts intellicense on `state` `data`
-  const [data, dispatch] = CounterImmerStore.useConsumer((state) => ({
+  const [data, dispatch] = CounterStore.useConsumer((state) => ({
     list: state.list,
     place: state.nested.place,
   }))
@@ -117,7 +117,7 @@ function OnePiece() {
 
 function OnePieceSorter() {
   console.log(OnePieceSorter.name)
-  const [dispatch] = CounterImmerStore.useConsumer(null)
+  const [dispatch] = CounterStore.useConsumer(null)
   return <button onClick={() => dispatch((draft) => draft.list.reverse())}>click to reverse list</button>
 }
 
@@ -125,7 +125,7 @@ function OnePieceSorter() {
 function AllState() {
   console.log(AllState.name)
 
-  const [state] = CounterImmerStore.useConsumer()
+  const [state] = CounterStore.useConsumer()
   return <pre>{JSON.stringify(state, null, 2)}</pre>
 }
 
@@ -145,24 +145,24 @@ export default function AdvancedCounter() {
 ## Installation
 
 ```sh
-npm i react-immer-store
+npm i immer immer-external-store
 ```
 
 ```sh
-yarn add react-immer-store
+yarn add immer immer-external-store
 ```
 
 ```sh
-pnpm add react-immer-store
+pnpm add immer immer-external-store
 ```
 
 ## API
 
-### `createImmerStore`
+### `createImmerExternalStore`
 
 ```ts
-import { createImmerStore } from 'react-immer-store'
-const { useConsumer } = createImmerStore(YourStateObject)
+import { createImmerExternalStore } from 'immer-external-store'
+const { useConsumer } = createImmerExternalStore(YourStateObject)
 ```
 
 ### `useConsumer`
@@ -208,7 +208,7 @@ dispatch((draft) => ({ hallo: 'world' }))
 
 ## Contributing
 
-If you find a bug, please [create an issue](https://github.com/wangzishun/react-immer-store/issues/new) providing instructions to reproduce it. It's always very appreciable if you find the time to fix it. In this case, please [submit a PR](https://github.com/wangzishun/react-immer-store/pulls).
+If you find a bug, please [create an issue](https://github.com/wangzishun/immer-external-store/issues/new) providing instructions to reproduce it. It's always very appreciable if you find the time to fix it. In this case, please [submit a PR](https://github.com/wangzishun/immer-external-store/pulls).
 
 If you're a beginner, extremely grateful for your attention and contribution.
 

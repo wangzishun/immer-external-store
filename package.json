@@ -1,5 +1,5 @@
 {
-  "name": "react-immer-store",
+  "name": "immer-external-store",
   "version": "0.0.2",
   "description": "",
   "main": "dist/index.cjs.js",
@@ -10,7 +10,7 @@
     "dev": "rollup -c -w",
     "build": "rimraf dist && tsc --emitDeclarationOnly && rollup -c",
     "test": "jest --passWithNoTests",
-    "prerelease": "pnpm jest && pnpm build",
+    "prerelease": "standard-version --prerelease",
     "release": "standard-version"
   },
   "type": "module",
@@ -55,6 +55,6 @@
     "context"
   ],
   "bugs": {
-    "url": "https://github.com/wangzishun/react-immer-store/issues"
+    "url": "https://github.com/wangzishun/immer-external-store/issues"
   }
 }
