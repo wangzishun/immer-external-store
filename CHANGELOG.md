@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.4](https://github.com/wangzishun/immer-external-store/compare/v0.0.3...v0.0.4) (2023-02-14)
+
+
+### Features
+
+* recipeOrPartial ([679598b](https://github.com/wangzishun/immer-external-store/commit/679598b91c362de1e11487ea918233d00d312556))
+
 ### [0.0.3](https://github.com/wangzishun/immer-external-store/compare/v0.0.3-0...v0.0.3) (2023-02-14)
 
 
