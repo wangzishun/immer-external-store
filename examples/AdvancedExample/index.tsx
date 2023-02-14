@@ -1,3 +1,5 @@
+import React from 'react'
+import ReactDOM from 'react-dom/client'
 import { createImmerExternalStore } from 'immer-external-store'
 
 const AdStore = createImmerExternalStore({
@@ -62,10 +64,11 @@ function Textarea() {
   return <pre contentEditable onBlur={onBlur} dangerouslySetInnerHTML={{ __html: JSON.stringify(state, null, 2) }} />
 }
 
-export default function AdvancedCounter() {
-  console.log(AdvancedCounter.name, 'render')
+function AdvancedExample() {
+  console.log(AdvancedExample.name, 'render')
   return (
     <div>
+      <h1>AdvancedExample</h1>
       <StringPathSelector />
       <FunctionSelector />
       <StringPathAndFunctionSelector />
@@ -75,3 +78,5 @@ export default function AdvancedCounter() {
     </div>
   )
 }
+
+ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(<AdvancedExample />)

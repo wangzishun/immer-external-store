@@ -1,3 +1,5 @@
+import React from 'react'
+import ReactDOM from 'react-dom/client'
 import { createImmerExternalStore } from 'immer-external-store'
 
 // [1]. create store
@@ -20,12 +22,15 @@ function Count() {
 }
 
 // [3]. dispatch as immer draft
-export default function SimpleCounter() {
+function SimpleCounter() {
   console.log(SimpleCounter.name, 'render')
   return (
     <ul>
+      <h1>SimpleCounter</h1>
       <Count />
       <button onClick={() => CounterStore.dispatch((draft) => draft.count++)}>count increment</button>
     </ul>
   )
 }
+
+ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(<SimpleCounter />)
