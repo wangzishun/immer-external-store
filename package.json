@@ -50,9 +50,9 @@
     "react",
     "state",
     "manager",
-    "management",
-    "event",
-    "context"
+    "immer",
+    "external",
+    "store"
   ],
   "bugs": {
     "url": "https://github.com/wangzishun/immer-external-store/issues"
