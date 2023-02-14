@@ -1,12 +1,11 @@
-import { FieldPathValues, Path } from './types';
+import { Path, PathValue } from './types';
 type DispatchRecipe<S> = (recipe: (draft: S) => any) => any;
 type Unpacked<T> = T extends (...args: any[]) => infer R ? R : never;
 export declare function createImmerExternalStore<S extends Object>(initialState: S): {
-    useConsumer: {
+    useState: {
         (): [S, DispatchRecipe<S>];
-        <Selector extends null>(sel: null): [DispatchRecipe<S>];
-        <Selector_1 extends (v: S) => any>(sel?: Selector_1 | undefined): [Unpacked<Selector_1>, DispatchRecipe<S>];
-        <P extends Path<S>[]>(...sel_0: P): [[...{ [K in keyof P]: import("./types").PathValue<S, P[K] & Path<S>>; }], DispatchRecipe<S>];
+        <FuncSel extends (v: S) => any, PathSel extends Path<S>, Sels extends (FuncSel | PathSel)[]>(...sels_0: Sels): [...{ [K in keyof Sels]: Sels[K] extends FuncSel ? Unpacked<Sels[K]> : Sels[K] extends PathSel ? PathValue<S, Sels[K]> : never; }, DispatchRecipe<S>];
     };
+    dispatch: DispatchRecipe<S>;
 };
 export {};

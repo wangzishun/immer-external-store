@@ -1,45 +1,31 @@
 import { createImmerExternalStore } from 'immer-external-store'
 
-// [1]. create immer store
+// [1]. create store
 const CounterStore = createImmerExternalStore({
   count: 0,
-  hallo: 'hallo-world',
+  list: ['hallo!', 'bro', 'and', 'sis'],
 })
 
-// [2]. dispatch to change count
-function Button() {
-  console.log(Button.name)
-
-  // null means subscribe nothing, only dispatch
-  const [dispatch] = CounterStore.useConsumer(null)
-  const increment = () => dispatch((draft) => draft.count++)
-
-  return <button onClick={increment}>count increment</button>
-}
-
-// [3]. subscribe count, and rerender when count changed
+// [2]. selector what you want
 function Count() {
-  console.log(Count.name)
+  console.log(Count.name, 'render')
 
-  // subscribe count, with dispatch
-  const [count, dispatch] = CounterStore.useConsumer('count')
-  return <span>{count}</span>
-}
-
-// [4]. subscribe hallo, and rerender when hallo changed
-function HalloWorld() {
-  console.log('HalloWorld will not rerender when count changed')
-
-  const [hallo, dispatch] = CounterStore.useConsumer('hallo')
-  return <b>{hallo}</b>
-}
-
-export default function SimpleCounter() {
+  const [count, list, dispatch] = CounterStore.useState('count', (s) => s.list)
   return (
-    <div>
+    <>
+      <li>count: {count}</li>
+      <li>list: {list.join(' ')}</li>
+    </>
+  )
+}
+
+// [3]. dispatch as immer draft
+export default function SimpleCounter() {
+  console.log(SimpleCounter.name, 'render')
+  return (
+    <ul>
       <Count />
-      <Button />
-      <HalloWorld />
-    </div>
+      <button onClick={() => CounterStore.dispatch((draft) => draft.count++)}>count increment</button>
+    </ul>
   )
 }

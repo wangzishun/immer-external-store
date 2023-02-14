@@ -10,9 +10,9 @@
   },
   "dependencies": {
     "immer": "^9.0.19",
+    "immer-external-store": "^0.0.3-0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "immer-external-store": "^0.0.1",
     "use-sync-external-store": "^1.2.0"
   },
   "devDependencies": {

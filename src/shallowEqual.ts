@@ -6,28 +6,42 @@
 
 const hasOwnProperty = Object.prototype.hasOwnProperty
 
-export const shallowEqual = (state, nextState) => {
-  if (Object.is(state, nextState)) {
+export const shallowEqual = (a, b) => {
+  if (Object.is(a, b)) {
     return true
   }
 
-  if (typeof state !== 'object' || !state || typeof nextState !== 'object' || !nextState) {
+  if (typeof a !== 'object' || !a || typeof b !== 'object' || !b) {
     return false
   }
 
-  const keysA = Object.keys(state)
-  const keysB = Object.keys(nextState)
+  const keysA = Object.keys(a)
+  const keysB = Object.keys(b)
 
   if (keysA.length !== keysB.length) {
     return false
   }
 
-  const bHasOwnProperty = hasOwnProperty.bind(nextState)
+  const bHasOwnProperty = hasOwnProperty.bind(b)
 
   for (let idx = 0; idx < keysA.length; idx++) {
     const key = keysA[idx]
 
-    if (!bHasOwnProperty(key) || !Object.is(state[key], nextState[key])) {
+    if (!bHasOwnProperty(key) || !Object.is(a[key], b[key])) {
+      return false
+    }
+  }
+
+  return true
+}
+
+export const arrayShallowEqual = (a, b) => {
+  if (a.length !== b.length) {
+    return false
+  }
+
+  for (let idx = 0; idx < a.length; idx++) {
+    if (!shallowEqual(a[idx], b[idx])) {
       return false
     }
   }

@@ -9,22 +9,33 @@ var withSelector = require('use-sync-external-store/shim/with-selector');
  * @see https://github.com/dashed/shallowequal/blob/master/index.js
  */
 const hasOwnProperty = Object.prototype.hasOwnProperty;
-const shallowEqual = (state, nextState) => {
-    if (Object.is(state, nextState)) {
+const shallowEqual = (a, b) => {
+    if (Object.is(a, b)) {
         return true;
     }
-    if (typeof state !== 'object' || !state || typeof nextState !== 'object' || !nextState) {
+    if (typeof a !== 'object' || !a || typeof b !== 'object' || !b) {
         return false;
     }
-    const keysA = Object.keys(state);
-    const keysB = Object.keys(nextState);
+    const keysA = Object.keys(a);
+    const keysB = Object.keys(b);
     if (keysA.length !== keysB.length) {
         return false;
     }
-    const bHasOwnProperty = hasOwnProperty.bind(nextState);
+    const bHasOwnProperty = hasOwnProperty.bind(b);
     for (let idx = 0; idx < keysA.length; idx++) {
         const key = keysA[idx];
-        if (!bHasOwnProperty(key) || !Object.is(state[key], nextState[key])) {
+        if (!bHasOwnProperty(key) || !Object.is(a[key], b[key])) {
+            return false;
+        }
+    }
+    return true;
+};
+const arrayShallowEqual = (a, b) => {
+    if (a.length !== b.length) {
+        return false;
+    }
+    for (let idx = 0; idx < a.length; idx++) {
+        if (!shallowEqual(a[idx], b[idx])) {
             return false;
         }
     }
@@ -40,51 +51,45 @@ const createStore = (initialState) => {
         return () => listeners.delete(listener);
     };
     const dispatch = (recipe) => {
-        const produced = immer.produce(state, (draft) => {
+        state = immer.produce(state, (draft) => {
             recipe(draft);
         });
-        state = produced;
         listeners.forEach((sub) => sub());
     };
-    const selector = (sel) => {
-        if (!sel?.length)
-            return state;
-        if (sel[0] === null) {
-            return null;
-        }
-        if (typeof sel[0] === 'function') {
-            return sel[0](state);
-        }
-        if (sel.length) {
-            return sel.map((path) => {
-                let finder = getters.get(path);
+    const selectorImplement = (selectors) => {
+        if (!selectors?.length)
+            return [state];
+        return selectors.map((sel) => {
+            if (typeof sel === 'function') {
+                return sel(state);
+            }
+            if (typeof sel === 'string') {
+                let finder = getters.get(sel);
                 if (!finder) {
-                    finder = new Function('o', `return o.${path.replace(/.(\d+)./, '[$1].')};`);
-                    getters.set(path, finder);
+                    finder = new Function('o', `return o["${sel.split('.').join('"]["')}"];`);
+                    getters.set(sel, finder);
                 }
                 return finder(state);
-            });
-        }
-        return state;
+            }
+            return null;
+        });
     };
     return {
         subscribe,
         getSnapshot: () => state,
         dispatch,
-        selector,
+        selectorImplement,
     };
 };
 function createImmerExternalStore(initialState) {
-    const store = createStore(initialState);
-    function useConsumer(...sel) {
-        const local = withSelector.useSyncExternalStoreWithSelector(store.subscribe, store.getSnapshot, store.getSnapshot, (s) => store.selector(sel), shallowEqual);
-        if (sel[0] === null) {
-            return [store.dispatch];
-        }
-        return [local, store.dispatch];
+    const { subscribe, getSnapshot, selectorImplement, dispatch } = createStore(initialState);
+    function useState(...selectors) {
+        const local = withSelector.useSyncExternalStoreWithSelector(subscribe, getSnapshot, getSnapshot, () => selectorImplement(selectors), arrayShallowEqual);
+        return [...local, dispatch];
     }
     return {
-        useConsumer,
+        useState,
+        dispatch,
     };
 }
 

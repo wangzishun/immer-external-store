@@ -2,8 +2,8 @@ import { produce } from 'immer'
 
 import { useSyncExternalStoreWithSelector } from 'use-sync-external-store/shim/with-selector'
 
-import { shallowEqual } from './shallowEqual'
-import { FieldPathValues, Path } from './types'
+import { arrayShallowEqual } from './shallowEqual'
+import { Path, PathValue } from './types'
 
 type DispatchRecipe<S> = (recipe: (draft: S) => any) => any
 type Unpacked<T> = T extends (...args: any[]) => infer R ? R : never
@@ -21,74 +21,74 @@ const createStore = <S extends Object>(initialState: S) => {
     return () => listeners.delete(listener)
   }
 
-  const dispatch = (recipe) => {
-    const produced = produce(state, (draft) => {
-      recipe(draft)
+  const dispatch: DispatchRecipe<S> = (recipe) => {
+    state = produce(state, (draft) => {
+      recipe(draft as any)
     })
 
-    state = produced
     listeners.forEach((sub) => sub())
   }
 
-  const selector = (sel) => {
-    if (!sel?.length) return state
+  const selectorImplement = (selectors) => {
+    if (!selectors?.length) return [state]
 
-    if (sel[0] === null) {
-      return null
-    }
+    return selectors.map((sel) => {
+      if (typeof sel === 'function') {
+        return sel(state)
+      }
 
-    if (typeof sel[0] === 'function') {
-      return sel[0](state)
-    }
-
-    if (sel.length) {
-      return sel.map((path) => {
-        let finder = getters.get(path)
+      if (typeof sel === 'string') {
+        let finder = getters.get(sel)
         if (!finder) {
-          finder = new Function('o', `return o.${path.replace(/.(\d+)./, '[$1].')};`)
-          getters.set(path, finder)
+          finder = new Function('o', `return o["${sel.split('.').join('"]["')}"];`)
+          getters.set(sel, finder)
         }
-
         return finder(state)
-      })
-    }
+      }
 
-    return state
+      return null
+    })
   }
 
   return {
     subscribe,
     getSnapshot: () => state,
     dispatch,
-    selector,
+    selectorImplement,
   }
 }
 
 export function createImmerExternalStore<S extends Object>(initialState: S) {
-  const store = createStore(initialState)
+  const { subscribe, getSnapshot, selectorImplement, dispatch } = createStore(initialState)
 
-  function useConsumer(): [S, DispatchRecipe<S>]
-  function useConsumer<Selector extends null>(sel: null): [DispatchRecipe<S>]
-  function useConsumer<Selector extends (v: S) => any>(sel?: Selector): [Unpacked<Selector>, DispatchRecipe<S>]
-  function useConsumer<P extends Path<S>[]>(...sel: readonly [...P]): [[...FieldPathValues<S, P>], DispatchRecipe<S>]
+  function useState(): [S, DispatchRecipe<S>]
+  function useState<FuncSel extends (v: S) => any, PathSel extends Path<S>, Sels extends Array<FuncSel | PathSel>>(
+    ...sels: [...Sels]
+  ): [
+    ...{
+      [K in keyof Sels]: Sels[K] extends FuncSel
+        ? Unpacked<Sels[K]>
+        : Sels[K] extends PathSel
+        ? PathValue<S, Sels[K]>
+        : never
+    },
+    DispatchRecipe<S>,
+  ]
 
-  function useConsumer(...sel) {
+  function useState(...selectors) {
     const local = useSyncExternalStoreWithSelector(
-      store.subscribe,
-      store.getSnapshot,
-      store.getSnapshot,
-      (s) => store.selector(sel),
-      shallowEqual,
+      subscribe,
+      getSnapshot,
+      getSnapshot,
+      () => selectorImplement(selectors),
+      arrayShallowEqual,
     )
 
-    if (sel[0] === null) {
-      return [store.dispatch] as const
-    }
-
-    return [local, store.dispatch] as const
+    return [...local, dispatch] as const
   }
 
   return {
-    useConsumer,
+    useState,
+    dispatch,
   }
 }

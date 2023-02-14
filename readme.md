@@ -1,6 +1,6 @@
 # immer-external-store
 
-This is a tiny state manager based on immer and useSyncExternalStore. Provide four kinds of selector, can be used in most scenarios,
+A tiny \ faster \ easier react state manager, based immer and useSyncExternalStore, provide two kinds of selector and friendly typescript support.
 
 <a href="https://npmjs.org/package/immer-external-store">
   <img alt="NPM version" src="https://img.shields.io/npm/v/immer-external-store.svg?style=flat-square">
@@ -11,6 +11,21 @@ This is a tiny state manager based on immer and useSyncExternalStore. Provide fo
 
 [![CI](https://github.com/wangzishun/immer-external-store/actions/workflows/ci.yml/badge.svg)](https://github.com/wangzishun/immer-external-store/actions/workflows/ci.yml)
 
+# Summary
+
+- [immer-external-store](#immer-external-store)
+- [Summary](#summary)
+- [Quick start with two examples](#quick-start-with-two-examples)
+  - [Simple Counter example](#simple-counter-example)
+  - [Advanced example](#advanced-example)
+- [Installation](#installation)
+- [API](#api)
+  - [`createImmerExternalStore`](#createimmerexternalstore)
+  - [`useState`](#usestate)
+  - [`dispatch`](#dispatch)
+- [Contributing](#contributing)
+- [License](#license)
+
 # Quick start with two examples
 
 ## Simple Counter example
@@ -18,47 +33,33 @@ This is a tiny state manager based on immer and useSyncExternalStore. Provide fo
 ```tsx
 import { createImmerExternalStore } from 'immer-external-store'
 
-// [1]. create immer store
+// [1]. create store
 const CounterStore = createImmerExternalStore({
   count: 0,
-  hallo: 'hallo-world',
+  list: ['hallo!', 'bro', 'and', 'sis'],
 })
 
-// [2]. dispatch to change count
-function Button() {
-  console.log(Button.name)
-
-  // null means subscribe nothing, only dispatch
-  const [dispatch] = CounterStore.useConsumer(null)
-  const increment = () => dispatch((draft) => draft.count++)
-
-  return <button onClick={increment}>count increment</button>
-}
-
-// [3]. subscribe count, and rerender when count changed
+// [2]. selector what you want
 function Count() {
-  console.log(Count.name)
+  console.log(Count.name, 'render')
 
-  // subscribe count, with dispatch
-  const [count, dispatch] = CounterStore.useConsumer('count')
-  return <span>{count}</span>
-}
-
-// [4]. subscribe hallo, and rerender when hallo changed
-function HalloWorld() {
-  console.log('HalloWorld will not rerender when count changed')
-
-  const [hallo, dispatch] = CounterStore.useConsumer('hallo')
-  return <b>{hallo}</b>
-}
-
-export default function SimpleCounter() {
+  const [count, list, dispatch] = CounterStore.useState('count', (s) => s.list)
   return (
-    <div>
+    <>
+      <li>count: {count}</li>
+      <li>list: {list.join(' ')}</li>
+    </>
+  )
+}
+
+// [3]. dispatch as immer draft
+export default function SimpleCounter() {
+  console.log(SimpleCounter.name, 'render')
+  return (
+    <ul>
       <Count />
-      <Button />
-      <HalloWorld />
-    </div>
+      <button onClick={() => CounterStore.dispatch((draft) => draft.count++)}>count increment</button>
+    </ul>
   )
 }
 ```
@@ -68,81 +69,84 @@ export default function SimpleCounter() {
 ```tsx
 import { createImmerExternalStore } from 'immer-external-store'
 
-const CounterStore = createImmerExternalStore({
+const AdStore = createImmerExternalStore({
   count: 0,
   hallo: 'hallo-world',
-  list: [{ name: 'luffy' }, { name: 'mingo' }, { name: 'zoro' }],
+  users: [{ name: 'luffy' }, { name: 'mingo' }, { name: 'zoro' }],
   nested: {
     place: ['Skypiea', 'Water7', 'Fishman Island', 'Dressrosa', 'Shabondy'],
   },
 })
 
-// use `StringPath` subscribe multiple state
-function Count() {
-  console.log(Count.name)
+function StringPathSelector() {
+  console.log(StringPathSelector.name, 'render')
 
-  // try ts intellicense on `StringPath` `data`
-  const [state, dispatch] = CounterStore.useConsumer('hallo', 'count', 'list.2.name')
-  return <pre>{JSON.stringify(state, null, 2)}</pre>
-}
-
-function Increment() {
-  console.log(Increment.name)
-  const [dispatch] = CounterStore.useConsumer(null)
-  const increment = () => dispatch((draft) => draft.count++) // dispatch based on immer.produce
-
-  return <button onClick={increment}>click to increment count</button>
-}
-
-// use `Selector` to subscribe partial state
-function OnePiece() {
-  console.log(OnePiece.name)
-
-  // try ts intellicense on `state` `data`
-  const [data, dispatch] = CounterStore.useConsumer((state) => ({
-    list: state.list,
-    place: state.nested.place,
-  }))
+  const [hallo, count, users1Name, dispatch] = AdStore.useState('hallo', 'count', 'users.1.name')
   return (
     <ul>
-      {data.list.map((item) => (
-        <li key={item.name}>{item.name}</li>
-      ))}
-      {data.place.map((item) => (
-        <li key={item}>{item}</li>
-      ))}
+      <div>StringPathSelector</div>
+      <li>hallo: {hallo}</li>
+      <li>count: {count}</li>
+      <li>users.1.name: {users1Name}</li>
     </ul>
   )
 }
 
-function OnePieceSorter() {
-  console.log(OnePieceSorter.name)
-  const [dispatch] = CounterStore.useConsumer(null)
-  return <button onClick={() => dispatch((draft) => draft.list.reverse())}>click to reverse list</button>
+function FunctionSelector() {
+  console.log(FunctionSelector.name, 'render')
+
+  const [usersAndPlace, hallo, dispatch] = AdStore.useState(
+    (s) => ({
+      users: s.users,
+      place: s.nested.place,
+    }),
+    (s) => s.hallo,
+  )
+  return (
+    <ul>
+      <div>FunctionSelecrot</div>
+      <li>users: {usersAndPlace.users.map((u, i) => i + ':' + u.name).join('\t')}</li>
+      <li>place:{usersAndPlace.place.join('->')}</li>
+      <li>hallo: {hallo}</li>
+    </ul>
+  )
 }
 
-// subscribe all state
-function AllState() {
-  console.log(AllState.name)
+function StringPathAndFunctionSelector() {
+  console.log(StringPathAndFunctionSelector.name, 'render')
 
-  const [state] = CounterStore.useConsumer()
-  return <pre>{JSON.stringify(state, null, 2)}</pre>
+  const [users1Name, place0, dispatch] = AdStore.useState('users.1.name', (s) => s.nested.place[0])
+  return (
+    <ul>
+      <div>StringPathAndFunctionSelector</div>
+      <li>users.1.name: {users1Name}</li>
+      <li>place0: {place0}</li>
+    </ul>
+  )
+}
+
+function Textarea() {
+  const [state, dispatch] = AdStore.useState() // get all state
+  const onBlur = (e) => dispatch((draft) => Object.assign(draft, JSON.parse(e.target.innerHTML)))
+  return <pre contentEditable onBlur={onBlur} dangerouslySetInnerHTML={{ __html: JSON.stringify(state, null, 2) }} />
 }
 
 export default function AdvancedCounter() {
+  console.log(AdvancedCounter.name, 'render')
   return (
     <div>
-      <Count />
-      <Increment />
-      <OnePiece />
-      <OnePieceSorter />
-      <AllState />
+      <StringPathSelector />
+      <FunctionSelector />
+      <StringPathAndFunctionSelector />
+      <button onClick={() => AdStore.dispatch((draft) => draft.count++)}>click to increment count</button>
+      <button onClick={() => AdStore.dispatch((draft) => draft.users.reverse())}>click to reverse users</button>
+      <Textarea />
     </div>
   )
 }
 ```
 
-## Installation
+# Installation
 
 ```sh
 npm i immer immer-external-store
@@ -156,44 +160,43 @@ yarn add immer immer-external-store
 pnpm add immer immer-external-store
 ```
 
-## API
+# API
 
-### `createImmerExternalStore`
+## `createImmerExternalStore`
+
+A store must be created before using.
 
 ```ts
 import { createImmerExternalStore } from 'immer-external-store'
-const { useConsumer } = createImmerExternalStore(YourStateObject)
+const store = createImmerExternalStore(YourStateObject) // { useState, dispatch }
 ```
 
-### `useConsumer`
+## `useState`
 
-It overload four times and returns a tuple of `[...state, dispatch]`.
+Determine the return tuple according to the input parameters, `[...state, dispatch]`.
 
-1.  It receives empty; It return fullstate and dispatch
-
-    ```ts
-    function useConsumer(): [S, DispatchRecipe<S>]
-    ```
-
-2.  It receives `null`; It return dispatch
+1.  If receives empty, return full-state and dispatch
 
     ```ts
-    function useConsumer<Selector extends null>(sel: null): [DispatchRecipe<S>]
+    const [fullState, dispatch] = store.useState()
     ```
 
-3.  It receives `Selector` function; It return PartialState and dispatch
+2.  If receives `DotPath` string rest, return value rest and dispatch
 
     ```ts
-    function useConsumer<Selector extends (v: S) => any>(sel?: Selector): [Unpacked<Selector>, DispatchRecipe<S>]
+    const [firstName, lastName, dispatch] = store.useState('path.to.first.name', 'path.to.last.name')
     ```
 
-4.  It receives `Path` rest; It return PathValues and dispatch
+3.  If receives `Selector` function rest, return selected rest and dispatch
 
     ```ts
-    function useConsumer<P extends Path<S>[]>(...sel: readonly [...P]): [[...FieldPathValues<S, P>], DispatchRecipe<S>]
+    const [firstName, lastName, dispatch] = store.useState(
+      (fullstate) => fullstate.firstName,
+      (fullstate) => fullstate.LastName,
+    )
     ```
 
-### `dispatch`
+## `dispatch`
 
 It is based on `immer.produce`. [if you don't know what immer is, this way please](https://immerjs.github.io/immer/produce/#example)
 
@@ -206,7 +209,7 @@ dispatch((draft) => draft.count++) // do anything you want
 dispatch((draft) => ({ hallo: 'world' }))
 ```
 
-## Contributing
+# Contributing
 
 If you find a bug, please [create an issue](https://github.com/wangzishun/immer-external-store/issues/new) providing instructions to reproduce it. It's always very appreciable if you find the time to fix it. In this case, please [submit a PR](https://github.com/wangzishun/immer-external-store/pulls).
 
@@ -214,6 +217,6 @@ If you're a beginner, extremely grateful for your attention and contribution.
 
 When working on this codebase, please use `pnpm`. Run `yarn examples` to run examples.
 
-## License
+# License
 
 MIT © [wangzishun](https://github.com/wangzishun)

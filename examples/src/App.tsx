@@ -1,5 +1,5 @@
 import SimpleCounter from './SimpleCounter'
-import AdvancedCounter from './AdvancedCounter'
+import AdvancedCounter from './AdvancedExample'
 
 function App() {
   return (
