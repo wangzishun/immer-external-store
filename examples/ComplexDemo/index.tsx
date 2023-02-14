@@ -2,7 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { createImmerExternalStore } from 'immer-external-store'
 
-const AdStore = createImmerExternalStore({
+const Store = createImmerExternalStore({
   count: 0,
   hallo: 'hallo-world',
   users: [{ name: 'luffy' }, { name: 'mingo' }, { name: 'zoro' }],
@@ -14,7 +14,7 @@ const AdStore = createImmerExternalStore({
 function StringPathSelector() {
   console.log(StringPathSelector.name, 'render')
 
-  const [hallo, count, users1Name, dispatch] = AdStore.useState('hallo', 'count', 'users.1.name')
+  const [hallo, count, users1Name, dispatch] = Store.useState('hallo', 'count', 'users.1.name')
   return (
     <ul>
       <div>StringPathSelector</div>
@@ -28,7 +28,7 @@ function StringPathSelector() {
 function FunctionSelector() {
   console.log(FunctionSelector.name, 'render')
 
-  const [usersAndPlace, hallo, dispatch] = AdStore.useState(
+  const [usersAndPlace, hallo, dispatch] = Store.useState(
     (s) => ({
       users: s.users,
       place: s.nested.place,
@@ -48,7 +48,7 @@ function FunctionSelector() {
 function StringPathAndFunctionSelector() {
   console.log(StringPathAndFunctionSelector.name, 'render')
 
-  const [users1Name, place0, dispatch] = AdStore.useState('users.1.name', (s) => s.nested.place[0])
+  const [users1Name, place0, dispatch] = Store.useState('users.1.name', (s) => s.nested.place[0])
   return (
     <ul>
       <div>StringPathAndFunctionSelector</div>
@@ -59,24 +59,24 @@ function StringPathAndFunctionSelector() {
 }
 
 function Textarea() {
-  const [state, dispatch] = AdStore.useState() // get all state
+  const [state, dispatch] = Store.useState() // get all state
   const onBlur = (e) => dispatch((draft) => Object.assign(draft, JSON.parse(e.target.innerHTML)))
   return <pre contentEditable onBlur={onBlur} dangerouslySetInnerHTML={{ __html: JSON.stringify(state, null, 2) }} />
 }
 
-function AdvancedExample() {
-  console.log(AdvancedExample.name, 'render')
+function ComplexDemo() {
+  console.log(ComplexDemo.name, 'render')
   return (
     <div>
-      <h1>AdvancedExample</h1>
+      <h1>ComplexDemo</h1>
       <StringPathSelector />
       <FunctionSelector />
       <StringPathAndFunctionSelector />
-      <button onClick={() => AdStore.dispatch((draft) => draft.count++)}>click to increment count</button>
-      <button onClick={() => AdStore.dispatch((draft) => draft.users.reverse())}>click to reverse users</button>
+      <button onClick={() => Store.dispatch((draft) => draft.count++)}>click to increment count</button>
+      <button onClick={() => Store.dispatch((draft) => draft.users.reverse())}>click to reverse users</button>
       <Textarea />
     </div>
   )
 }
 
-ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(<AdvancedExample />)
+ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(<ComplexDemo />)

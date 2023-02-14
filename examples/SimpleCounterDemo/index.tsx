@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom/client'
 import { createImmerExternalStore } from 'immer-external-store'
 
 // [1]. create store
-const CounterStore = createImmerExternalStore({
+const Store = createImmerExternalStore({
   count: 0,
   list: ['hallo!', 'bro', 'and', 'sis'],
 })
@@ -12,7 +12,7 @@ const CounterStore = createImmerExternalStore({
 function Count() {
   console.log(Count.name, 'render')
 
-  const [count, list, dispatch] = CounterStore.useState('count', (s) => s.list)
+  const [count, list, dispatch] = Store.useState('count', (s) => s.list)
   return (
     <>
       <li>count: {count}</li>
@@ -22,15 +22,15 @@ function Count() {
 }
 
 // [3]. dispatch as immer draft
-function SimpleCounter() {
-  console.log(SimpleCounter.name, 'render')
+function SimpleCounterDemo() {
+  console.log(SimpleCounterDemo.name, 'render')
   return (
     <ul>
-      <h1>SimpleCounter</h1>
+      <h1>SimpleCounterDemo</h1>
       <Count />
-      <button onClick={() => CounterStore.dispatch((draft) => draft.count++)}>count increment</button>
+      <button onClick={() => Store.dispatch((draft) => draft.count++)}>count increment</button>
     </ul>
   )
 }
 
-ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(<SimpleCounter />)
+ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(<SimpleCounterDemo />)
