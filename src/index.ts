@@ -9,10 +9,22 @@ type Recipe<S> = (draft: S) => any
 type Dispatch<S> = (recipeOrPartial: Recipe<S> | Partial<S>) => any
 type Unpacked<T> = T extends (...args: any[]) => infer R ? R : never
 
+type FuncSel<S> = (v: S) => any
+type PathSel<S> = Path<S>
+type Selectors<S> = Array<FuncSel<S> | PathSel<S>>
+
+type UnpackSelector<Sel, S> = Sel extends FuncSel<S>
+  ? Unpacked<Sel>
+  : Sel extends PathSel<S>
+  ? PathValue<S, Sel>
+  : never
+
+type UnpackSelectors<Sels, S> = { [K in keyof Sels]: UnpackSelector<Sels[K], S> }
+
 type Listener = (...args: any[]) => void
 
 const createStore = <S extends Object>(initialState: S) => {
-  let state = initialState
+  let STATE = initialState
 
   const listeners = new Set<Listener>()
   const getters = new Map<string, any>()
@@ -23,22 +35,23 @@ const createStore = <S extends Object>(initialState: S) => {
   }
 
   const dispatch: Dispatch<S> = (recipeOrPartial) => {
-    state = produce(state, (draft: any) => {
+    STATE = produce(STATE, (draft: any) => {
       if (typeof recipeOrPartial === 'function') {
         recipeOrPartial(draft)
       }
       Object.assign(draft, recipeOrPartial)
     })
 
+    // ;[...listeners].forEach((sub) => sub())
     listeners.forEach((sub) => sub())
   }
 
   const selectorImplement = (selectors) => {
-    if (!selectors?.length) return [state]
+    if (!selectors?.length) return [STATE]
 
     return selectors.map((sel) => {
       if (typeof sel === 'function') {
-        return sel(state)
+        return sel(STATE)
       }
 
       if (typeof sel === 'string') {
@@ -47,38 +60,42 @@ const createStore = <S extends Object>(initialState: S) => {
           finder = new Function('o', `return o["${sel.split('.').join('"]["')}"];`)
           getters.set(sel, finder)
         }
-        return finder(state)
+        return finder(STATE)
       }
 
       return null
     })
   }
 
+  function get(): [S]
+  function get<Sels extends Selectors<S>>(...sels: [...Sels]): [...UnpackSelectors<Sels, S>]
+  function get(...selector) {
+    return selectorImplement(selector)
+  }
+
+  function replace(nextStateOrReplaceRecipe: S | ((draft: S) => S)) {
+    if (typeof nextStateOrReplaceRecipe === 'function') {
+      STATE = produce(STATE, nextStateOrReplaceRecipe)
+    } else {
+      STATE = nextStateOrReplaceRecipe
+    }
+  }
+
   return {
     subscribe,
-    getSnapshot: () => state,
+    getSnapshot: () => STATE,
     dispatch,
     selectorImplement,
+    get,
+    replace,
   }
 }
 
 export function createImmerExternalStore<S extends Object>(initialState: S) {
-  const { subscribe, getSnapshot, selectorImplement, dispatch } = createStore(initialState)
+  const { subscribe, getSnapshot, selectorImplement, dispatch, get, replace } = createStore(initialState)
 
   function useState(): [S, Dispatch<S>]
-  function useState<FuncSel extends (v: S) => any, PathSel extends Path<S>, Sels extends Array<FuncSel | PathSel>>(
-    ...sels: [...Sels]
-  ): [
-    ...{
-      [K in keyof Sels]: Sels[K] extends FuncSel
-        ? Unpacked<Sels[K]>
-        : Sels[K] extends PathSel
-        ? PathValue<S, Sels[K]>
-        : never
-    },
-    Dispatch<S>,
-  ]
-
+  function useState<Sels extends Selectors<S>>(...sels: [...Sels]): [...UnpackSelectors<Sels, S>, Dispatch<S>]
   function useState(...selectors) {
     const local = useSyncExternalStoreWithSelector(
       subscribe,
@@ -91,9 +108,5 @@ export function createImmerExternalStore<S extends Object>(initialState: S) {
     return [...local, dispatch] as const
   }
 
-  return {
-    useState,
-    dispatch,
-  }
+  return { useState, dispatch, get, replace }
 }
-
