@@ -110,3 +110,5 @@ export function createImmerExternalStore<S extends Object>(initialState: S) {
 
   return { useState, dispatch, get, replace }
 }
+
+export default createImmerExternalStore

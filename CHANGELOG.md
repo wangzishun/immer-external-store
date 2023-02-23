@@ -38,4 +38,4 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Features
 
-* rollup config ([728447e](https://github.com/wangzishun/react-event-context/commit/728447eb6ff6e1b8fc6640542b7f169c52db7136))
+* rollup config ([728447e](https://github.com/wangzishun/immer-external-store/commit/728447eb6ff6e1b8fc6640542b7f169c52db7136))

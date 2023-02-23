@@ -18,19 +18,19 @@ const config = defineConfig({
 
   output: [
     { file: pkg.main, name: pkg.name, format: 'cjs' },
-    { file: pkg.module, format: 'esm' },
+    // { file: pkg.module, format: 'esm' },
   ],
   external,
   plugins: [
     resolve({ extensions }),
     commonjs(),
     typescript(),
-    // babel({
-    //   exclude: 'node_modules/**',
-    //   babelHelpers: 'bundled',
-    //   presets: ['@babel/preset-typescript', '@babel/preset-env'],
-    //   extensions,
-    // }),
+    babel({
+      exclude: 'node_modules/**',
+      babelHelpers: 'bundled',
+      presets: ['@babel/preset-typescript', '@babel/preset-env'],
+      extensions,
+    }),
     // terser(),
   ],
 })
@@ -40,7 +40,7 @@ const unpkg = defineConfig({
   output: [
     {
       file: pkg.unpkg,
-      name: 'ReactEventContext',
+      name: 'ImmerExternalStore',
       format: 'umd',
       exports: 'named',
       globals: {
