@@ -1,6 +1,6 @@
 {
   "name": "immer-external-store",
-  "version": "0.0.5",
+  "version": "0.0.6-0",
   "description": "A tiny faster easier react state manager, based immer and useSyncExternalStore, provide two kinds of selector and friendly typescript support.",
   "module": "src/index.ts",
   "main": "dist/index.cjs.js",
