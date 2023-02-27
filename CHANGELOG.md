@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.6](https://github.com/wangzishun/immer-external-store/compare/v0.0.6-0...v0.0.6) (2023-02-27)
+
+
+### Features
+
+* async initial ([15bada1](https://github.com/wangzishun/immer-external-store/commit/15bada173a51347c354c0b283e2b9066d80ed9fc))
+
 ### [0.0.6-1](https://github.com/wangzishun/immer-external-store/compare/v0.0.6-0...v0.0.6-1) (2023-02-27)
 
 
