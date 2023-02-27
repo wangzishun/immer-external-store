@@ -21,10 +21,26 @@ type UnpackSelector<Sel, S> = Sel extends FuncSel<S>
 
 type UnpackSelectors<Sels, S> = { [K in keyof Sels]: UnpackSelector<Sels[K], S> }
 
-type Listener = (...args: any[]) => void
+type Listener = (...args: any[]) => any
 
-const createStore = <S extends Object>(initialState: S) => {
-  let STATE = initialState
+type Initial = Object | (() => Object) | (() => Promise<Object>)
+type UnpackInitial<I> = I extends () => Promise<infer R> ? R : I extends () => infer R ? R : I
+
+const thenableHelper = (func, callback) => {
+  const result = func()
+  if (result && typeof result.then === 'function') {
+    result.then(callback)
+  } else {
+    callback(result)
+  }
+}
+
+export function createImmerExternalStore<Init extends Initial, S extends UnpackInitial<Init>>(initial: Init) {
+  if (!initial) {
+    throw new Error('initial state is required')
+  }
+
+  let STATE = {}
 
   const listeners = new Set<Listener>()
   const getters = new Map<string, any>()
@@ -38,63 +54,42 @@ const createStore = <S extends Object>(initialState: S) => {
     STATE = produce(STATE, (draft: any) => {
       if (typeof recipeOrPartial === 'function') {
         recipeOrPartial(draft)
-        return
+      } else {
+        Object.assign(draft, recipeOrPartial)
       }
-
-      Object.assign(draft, recipeOrPartial)
     })
 
     new Set(listeners).forEach((sub) => sub())
   }
 
+  if (typeof initial === 'function') {
+    thenableHelper(initial, dispatch)
+  }
+
+  const getSnapshot = () => STATE
+
   const selectorImplement = (selectors) => {
     if (!selectors?.length) return [STATE]
 
     return selectors.map((sel) => {
-      if (typeof sel === 'function') {
-        return sel(STATE)
-      }
+      // if (typeof sel === 'function') return sel(STATE)
+      let picker = sel
 
       if (typeof sel === 'string') {
-        let finder = getters.get(sel)
-        if (!finder) {
-          finder = new Function('o', `return o["${sel.split('.').join('"]["')}"];`)
-          getters.set(sel, finder)
+        picker = getters.get(sel)
+        if (!picker) {
+          picker = new Function('o', `return o["${sel.split('.').join('"]["')}"];`)
+          getters.set(sel, picker)
         }
-        return finder(STATE)
       }
 
-      return null
+      try {
+        return picker(STATE)
+      } catch (error) {
+        return undefined
+      }
     })
   }
-
-  function get(): [S]
-  function get<Sels extends Selectors<S>>(...sels: [...Sels]): [...UnpackSelectors<Sels, S>]
-  function get(...selector) {
-    return selectorImplement(selector)
-  }
-
-  function replace(nextStateOrReplaceRecipe: S | ((draft: S) => S)) {
-    if (typeof nextStateOrReplaceRecipe === 'function') {
-      STATE = produce(STATE, nextStateOrReplaceRecipe)
-      return
-    }
-
-    STATE = nextStateOrReplaceRecipe
-  }
-
-  return {
-    subscribe,
-    getSnapshot: () => STATE,
-    dispatch,
-    selectorImplement,
-    get,
-    replace,
-  }
-}
-
-export function createImmerExternalStore<S extends Object>(initialState: S) {
-  const { subscribe, getSnapshot, selectorImplement, dispatch, get, replace } = createStore(initialState)
 
   function useState(): [S, Dispatch<S>]
   function useState<Sels extends Selectors<S>>(...sels: [...Sels]): [...UnpackSelectors<Sels, S>, Dispatch<S>]
@@ -110,7 +105,14 @@ export function createImmerExternalStore<S extends Object>(initialState: S) {
     return [...local, dispatch] as const
   }
 
-  return { useState, dispatch, get, replace }
+  function getState(): [S]
+  function getState<Sels extends Selectors<S>>(...sels: [...Sels]): [...UnpackSelectors<Sels, S>]
+  function getState(...selector) {
+    return selectorImplement(selector)
+  }
+  function replace(next) {}
+
+  return { useState, dispatch, subscribe, getSnapshot, getState, replace }
 }
 
 export default createImmerExternalStore
