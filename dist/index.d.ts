@@ -9,16 +9,17 @@ type UnpackSelector<Sel, S> = Sel extends FuncSel<S> ? Unpacked<Sel> : Sel exten
 type UnpackSelectors<Sels, S> = {
     [K in keyof Sels]: UnpackSelector<Sels[K], S>;
 };
-export declare function createImmerExternalStore<S extends Object>(initialState: S): {
+type Listener = (...args: any[]) => any;
+type Initial = Object | (() => Object) | (() => Promise<Object>);
+type UnpackInitial<I> = I extends () => Promise<infer R> ? R : I extends () => infer R ? R : I;
+export declare function createImmerExternalStore<Init extends Initial, S extends UnpackInitial<Init>>(initialState: Init): {
     useState: {
         (): [S, Dispatch<S>];
         <Sels extends Selectors<S>>(...sels_0: Sels): [...UnpackSelectors<Sels, S>, Dispatch<S>];
     };
     dispatch: Dispatch<S>;
-    get: {
-        (): [S];
-        <Sels_1 extends Selectors<S>>(...sels_0: Sels_1): [...UnpackSelectors<Sels_1, S>];
-    };
-    replace: (nextStateOrReplaceRecipe: S | ((draft: S) => S)) => void;
+    subscribe: (listener: Listener) => () => boolean;
+    getSnapshot: () => S;
+    refresh: (init?: Init) => Promise<void>;
 };
 export default createImmerExternalStore;
