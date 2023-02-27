@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, fireEvent } from '@testing-library/react'
+import { render, fireEvent, act, waitFor } from '@testing-library/react'
 
 import { createImmerExternalStore } from '../src'
 
@@ -24,14 +24,19 @@ test('get full state', () => {
   expect(app.getByText(JSON.stringify(genState()))).toBeDefined()
 })
 
-test('a simple counter increment', () => {
+test('a simple counter increment', async () => {
   const Store = createImmerExternalStore(genState())
 
   let btnRenderCount = 0
 
   const Increment = () => {
     return (
-      <button aria-label="Button" onClick={() => Store.dispatch((draft) => draft.count++)}>
+      <button
+        aria-label="Button"
+        onClick={() => {
+          Store.dispatch((draft) => draft.count++)
+        }}
+      >
         {btnRenderCount++}
       </button>
     )
@@ -42,7 +47,7 @@ test('a simple counter increment', () => {
     return <div aria-label="Count">{state.count}</div>
   }
 
-  const app = render(
+  let app = render(
     <>
       <Increment />
       <Count />
@@ -52,10 +57,17 @@ test('a simple counter increment', () => {
   const btn = app.getByLabelText('Button')
   const count = app.getByLabelText('Count')
 
-  fireEvent.click(btn)
+  await waitFor(() => fireEvent.click(btn))
   expect(count.innerHTML).toBe('1')
-  fireEvent.click(btn)
+
+  await waitFor(() => fireEvent.click(btn))
   expect(count.innerHTML).toBe('2')
+
+  expect(Store.getSnapshot().count).toBe(2)
+
+  await waitFor(() => Store.refresh())
+  expect(count.innerHTML).toBe('0')
+  expect(Store.getSnapshot().count).toBe(0)
 })
 
 test('counter string path selector', () => {

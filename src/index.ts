@@ -1,4 +1,5 @@
-import { produce } from 'immer'
+import { createDraft, finishDraft } from 'immer'
+// import { produce } from 'immer'
 
 import { useSyncExternalStoreWithSelector } from 'use-sync-external-store/shim/with-selector'
 
@@ -9,91 +10,104 @@ type Recipe<S> = (draft: S) => any
 type Dispatch<S> = (recipeOrPartial: Recipe<S> | Partial<S>) => any
 type Unpacked<T> = T extends (...args: any[]) => infer R ? R : never
 
-type Listener = (...args: any[]) => void
+type FuncSel<S> = (v: S) => any
+type PathSel<S> = Path<S>
+type Selectors<S> = Array<FuncSel<S> | PathSel<S>>
 
-const createStore = <S extends Object>(initialState: S) => {
-  let state = initialState
+type UnpackSelector<Sel, S> = Sel extends FuncSel<S>
+  ? Unpacked<Sel>
+  : Sel extends PathSel<S>
+  ? PathValue<S, Sel>
+  : never
+
+type UnpackSelectors<Sels, S> = { [K in keyof Sels]: UnpackSelector<Sels[K], S> }
+
+type Listener = (...args: any[]) => any
+
+type Initial = Object | (() => Object) | (() => Promise<Object>)
+type UnpackInitial<I> = I extends () => Promise<infer R> ? R : I extends () => infer R ? R : I
+
+export function createImmerExternalStore<Init extends Initial, S extends UnpackInitial<Init>>(initialState: Init) {
+  let STATE = {} as S
 
   const listeners = new Set<Listener>()
   const getters = new Map<string, any>()
+
+  const notify = () => new Set(listeners).forEach((sub) => sub())
 
   const subscribe = (listener: Listener) => {
     listeners.add(listener)
     return () => listeners.delete(listener)
   }
 
-  const dispatch: Dispatch<S> = (recipeOrPartial) => {
-    state = produce(state, (draft: any) => {
-      if (typeof recipeOrPartial === 'function') {
-        recipeOrPartial(draft)
-      }
-      Object.assign(draft, recipeOrPartial)
-    })
+  const dispatch: Dispatch<S> = async (recipeOrPartial) => {
+    const draft = createDraft(STATE)
 
-    listeners.forEach((sub) => sub())
+    if (typeof recipeOrPartial === 'function') {
+      await recipeOrPartial(draft as any)
+    } else {
+      Object.assign(draft, recipeOrPartial)
+    }
+
+    STATE = finishDraft(draft) as any
+
+    notify()
   }
 
-  const selectorImplement = (selectors) => {
-    if (!selectors?.length) return [state]
+  const refresh = async (init: Init = initialState) => {
+    if (typeof init === 'function') {
+      STATE = await init()
+    } else {
+      STATE = init as any
+    }
+    notify()
+  }
+
+  refresh(initialState) // immediately refresh
+
+  const selectorImpl = (selectors) => {
+    if (!selectors?.length) return [STATE]
 
     return selectors.map((sel) => {
-      if (typeof sel === 'function') {
-        return sel(state)
-      }
+      let picker = sel // as function selector
 
       if (typeof sel === 'string') {
-        let finder = getters.get(sel)
-        if (!finder) {
-          finder = new Function('o', `return o["${sel.split('.').join('"]["')}"];`)
-          getters.set(sel, finder)
+        picker = getters.get(sel)
+        if (!picker) {
+          picker = new Function('o', `return o["${sel.split('.').join('"]["')}"];`)
+          getters.set(sel, picker)
         }
-        return finder(state)
       }
 
-      return null
+      try {
+        return picker(STATE)
+      } catch (error) {
+        return undefined
+      }
     })
   }
 
-  return {
-    subscribe,
-    getSnapshot: () => state,
-    dispatch,
-    selectorImplement,
-  }
-}
+  const getSnapshot = () => STATE
 
-export function createImmerExternalStore<S extends Object>(initialState: S) {
-  const { subscribe, getSnapshot, selectorImplement, dispatch } = createStore(initialState)
+  // function getState(): [S]
+  // function getState<Sels extends Selectors<S>>(...sels: [...Sels]): [...UnpackSelectors<Sels, S>]
+  // function getState(...selector) {
+  //   return selectorImpl(selector)
+  // }
 
   function useState(): [S, Dispatch<S>]
-  function useState<FuncSel extends (v: S) => any, PathSel extends Path<S>, Sels extends Array<FuncSel | PathSel>>(
-    ...sels: [...Sels]
-  ): [
-    ...{
-      [K in keyof Sels]: Sels[K] extends FuncSel
-        ? Unpacked<Sels[K]>
-        : Sels[K] extends PathSel
-        ? PathValue<S, Sels[K]>
-        : never
-    },
-    Dispatch<S>,
-  ]
-
-  function useState(...selectors) {
-    const local = useSyncExternalStoreWithSelector(
+  function useState<Sels extends Selectors<S>>(...sels: [...Sels]): [...UnpackSelectors<Sels, S>, Dispatch<S>]
+  function useState() {
+    return useSyncExternalStoreWithSelector(
       subscribe,
       getSnapshot,
       getSnapshot,
-      () => selectorImplement(selectors),
+      () => selectorImpl(Array.from(arguments)),
       arrayShallowEqual,
-    )
-
-    return [...local, dispatch] as const
+    ).concat(dispatch)
   }
 
-  return {
-    useState,
-    dispatch,
-  }
+  return { useState, dispatch, subscribe, getSnapshot, refresh }
 }
 
+export default createImmerExternalStore

@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.6-0](https://github.com/wangzishun/immer-external-store/compare/v0.0.5...v0.0.6-0) (2023-02-23)
+
+
+### Bug Fixes
+
+* 调整 pkg module, 解决某些场景下的load chunk error ([cfd2f36](https://github.com/wangzishun/immer-external-store/commit/cfd2f363307138be8c1a7b293d1100c040b1eb7c))
+
 ### [0.0.5](https://github.com/wangzishun/immer-external-store/compare/v0.0.4...v0.0.5) (2023-02-14)
 
 ### [0.0.4](https://github.com/wangzishun/immer-external-store/compare/v0.0.3...v0.0.4) (2023-02-14)
@@ -38,4 +45,4 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Features
 
-* rollup config ([728447e](https://github.com/wangzishun/react-event-context/commit/728447eb6ff6e1b8fc6640542b7f169c52db7136))
+* rollup config ([728447e](https://github.com/wangzishun/immer-external-store/commit/728447eb6ff6e1b8fc6640542b7f169c52db7136))
