@@ -21,6 +21,7 @@ A tiny faster easier react state manager, based immer and useSyncExternalStore, 
     <tr>
       <td><a href="https://codesandbox.io/s/github/wangzishun/immer-external-store/tree/master/examples/SimpleCounterDemo" target="_blank">SimpleCounterDemo</a></td>
       <td><a href="https://codesandbox.io/s/github/wangzishun/immer-external-store/tree/master/examples/ComplexDemo" target="_blank">ComplexDemo</a></td>
+      <td><a href="https://codesandbox.io/s/github/wangzishun/immer-external-store/tree/master/examples/AsyncDemo" target="_blank">AsyncDemo</a></td>
     </tr>
   </tbody>
 </table>
@@ -37,6 +38,8 @@ A tiny faster easier react state manager, based immer and useSyncExternalStore, 
   - [`createImmerExternalStore`](#createimmerexternalstore)
   - [`useState`](#usestate)
   - [`dispatch`](#dispatch)
+  - [`getSnapshot`](#getsnapshot)
+  - [`refresh`](#refresh)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -178,33 +181,45 @@ pnpm add immer immer-external-store
 
 ## `createImmerExternalStore`
 
-A store must be created before using.
+A store must be created before using. `createImmerExternalStore` accept two types of parameters for `initialState`, and return store instance.
 
-```ts
-import { createImmerExternalStore } from 'immer-external-store'
-const store = createImmerExternalStore(YourStateObject) // { useState, dispatch }
-```
+1. If received common object
+
+   ```ts
+   import { createImmerExternalStore } from 'immer-external-store'
+   const instance = createImmerExternalStore(YourStateObject)
+   ```
+
+2. If received function or async/await promise, will be executed and updated nextTick, it means there is "undefined" before update.
+   <a href="https://codesandbox.io/s/github/wangzishun/immer-external-store/tree/master/examples/AsyncDemo" target="_blank">AsyncDemo</a>
+
+   ```ts
+   import { createImmerExternalStore } from 'immer-external-store'
+   const instance1 = createImmerExternalStore(() => YourStateObject)
+
+   const instance2 = createImmerExternalStore(async () => YourStateObject)
+   ```
 
 ## `useState`
 
 Determine the return tuple according to the input parameters, `[...state, dispatch]`.
 
-1.  If receives empty, return full-state and dispatch
+1.  If received empty, return full-state and dispatch
 
     ```ts
-    const [fullState, dispatch] = store.useState()
+    const [fullState, dispatch] = instance.useState()
     ```
 
-2.  If receives `DotPath` string rest, return value rest and dispatch
+2.  If received `DotPath` string rest, return value rest and dispatch
 
     ```ts
-    const [firstName, lastName, dispatch] = store.useState('path.to.first.name', 'path.to.last.name')
+    const [firstName, lastName, dispatch] = instance.useState('path.to.first.name', 'path.to.last.name')
     ```
 
-3.  If receives `Selector` function rest, return selected rest and dispatch
+3.  If received `Selector` function rest, return selected rest and dispatch
 
     ```ts
-    const [firstName, lastName, dispatch] = store.useState(
+    const [firstName, lastName, dispatch] = instance.useState(
       (fullstate) => fullstate.firstName,
       (fullstate) => fullstate.LastName,
     )
@@ -212,17 +227,40 @@ Determine the return tuple according to the input parameters, `[...state, dispat
 
 ## `dispatch`
 
-It is based `immer.produce`. [if you don't know what immer is, this way please](https://immerjs.github.io/immer/produce/#example)
+It is based `immer.produce`, . [if you don't know what immer is, this way please](https://immerjs.github.io/immer/produce/#example)
 
 ```ts
-store.dispatch((draft) => draft.count++) // do anything you want, recommend this way
+instance.dispatch((draft) => draft.count++) // do anything you want, recommend this way
 
-store.dispatch({ count: 11 }) // based Object.assign, only 1 depth
+instance.dispatch({ count: 11 }) // based Object.assign, only 1 depth
+```
+
+```ts
+instance.dispatch(async (draft) => {
+  await Promise.resolve() // support async/await
+  draft.hallo = 'world'
+})
 ```
 
 ```ts
 // unlike immer, it is not possible to perform state replace by return value. only revise draft is effective
-store.dispatch((draft) => ({ hallo: 'world' }))
+instance.dispatch((draft) => ({ hallo: 'world' }))
+```
+
+## `getSnapshot`
+
+Return full state
+
+```ts
+store.getSnapshot()
+```
+
+## `refresh`
+
+Refresh whole state, the `initialState` is used by default. PS: you can give a new initialState if you want
+
+```ts
+store.refresh() // store.refresh(anotherInitialState)
 ```
 
 # Contributing
