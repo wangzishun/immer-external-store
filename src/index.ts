@@ -38,7 +38,9 @@ const createStore = <S extends Object>(initialState: S) => {
     STATE = produce(STATE, (draft: any) => {
       if (typeof recipeOrPartial === 'function') {
         recipeOrPartial(draft)
+        return
       }
+
       Object.assign(draft, recipeOrPartial)
     })
 
@@ -75,9 +77,10 @@ const createStore = <S extends Object>(initialState: S) => {
   function replace(nextStateOrReplaceRecipe: S | ((draft: S) => S)) {
     if (typeof nextStateOrReplaceRecipe === 'function') {
       STATE = produce(STATE, nextStateOrReplaceRecipe)
-    } else {
-      STATE = nextStateOrReplaceRecipe
+      return
     }
+
+    STATE = nextStateOrReplaceRecipe
   }
 
   return {
