@@ -42,8 +42,7 @@ const createStore = <S extends Object>(initialState: S) => {
       Object.assign(draft, recipeOrPartial)
     })
 
-    // ;[...listeners].forEach((sub) => sub())
-    listeners.forEach((sub) => sub())
+    new Set(listeners).forEach((sub) => sub())
   }
 
   const selectorImplement = (selectors) => {
