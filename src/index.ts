@@ -1,4 +1,5 @@
-import { produce } from 'immer'
+import { createDraft, finishDraft } from 'immer'
+// import { produce } from 'immer'
 
 import { useSyncExternalStoreWithSelector } from 'use-sync-external-store/shim/with-selector'
 
@@ -26,54 +27,49 @@ type Listener = (...args: any[]) => any
 type Initial = Object | (() => Object) | (() => Promise<Object>)
 type UnpackInitial<I> = I extends () => Promise<infer R> ? R : I extends () => infer R ? R : I
 
-const thenableHelper = (func, callback) => {
-  const result = func()
-  if (result && typeof result.then === 'function') {
-    result.then(callback)
-  } else {
-    callback(result)
-  }
-}
-
-export function createImmerExternalStore<Init extends Initial, S extends UnpackInitial<Init>>(initial: Init) {
-  if (!initial) {
-    throw new Error('initial state is required')
-  }
-
-  let STATE = {}
+export function createImmerExternalStore<Init extends Initial, S extends UnpackInitial<Init>>(initialState: Init) {
+  let STATE = {} as S
 
   const listeners = new Set<Listener>()
   const getters = new Map<string, any>()
+
+  const notify = () => new Set(listeners).forEach((sub) => sub())
 
   const subscribe = (listener: Listener) => {
     listeners.add(listener)
     return () => listeners.delete(listener)
   }
 
-  const dispatch: Dispatch<S> = (recipeOrPartial) => {
-    STATE = produce(STATE, (draft: any) => {
-      if (typeof recipeOrPartial === 'function') {
-        recipeOrPartial(draft)
-      } else {
-        Object.assign(draft, recipeOrPartial)
-      }
-    })
+  const dispatch: Dispatch<S> = async (recipeOrPartial) => {
+    const draft = createDraft(STATE)
 
-    new Set(listeners).forEach((sub) => sub())
+    if (typeof recipeOrPartial === 'function') {
+      await recipeOrPartial(draft as any)
+    } else {
+      Object.assign(draft, recipeOrPartial)
+    }
+
+    STATE = finishDraft(draft) as any
+
+    notify()
   }
 
-  if (typeof initial === 'function') {
-    thenableHelper(initial, dispatch)
+  const refresh = async (init: Init = initialState) => {
+    if (typeof init === 'function') {
+      STATE = await init()
+    } else {
+      STATE = init as any
+    }
+    notify()
   }
 
-  const getSnapshot = () => STATE
+  refresh(initialState) // immediately refresh
 
-  const selectorImplement = (selectors) => {
+  const selectorImpl = (selectors) => {
     if (!selectors?.length) return [STATE]
 
     return selectors.map((sel) => {
-      // if (typeof sel === 'function') return sel(STATE)
-      let picker = sel
+      let picker = sel // as function selector
 
       if (typeof sel === 'string') {
         picker = getters.get(sel)
@@ -91,28 +87,27 @@ export function createImmerExternalStore<Init extends Initial, S extends UnpackI
     })
   }
 
+  const getSnapshot = () => STATE
+
+  // function getState(): [S]
+  // function getState<Sels extends Selectors<S>>(...sels: [...Sels]): [...UnpackSelectors<Sels, S>]
+  // function getState(...selector) {
+  //   return selectorImpl(selector)
+  // }
+
   function useState(): [S, Dispatch<S>]
   function useState<Sels extends Selectors<S>>(...sels: [...Sels]): [...UnpackSelectors<Sels, S>, Dispatch<S>]
-  function useState(...selectors) {
-    const local = useSyncExternalStoreWithSelector(
+  function useState() {
+    return useSyncExternalStoreWithSelector(
       subscribe,
       getSnapshot,
       getSnapshot,
-      () => selectorImplement(selectors),
+      () => selectorImpl(Array.from(arguments)),
       arrayShallowEqual,
-    )
-
-    return [...local, dispatch] as const
+    ).concat(dispatch)
   }
 
-  function getState(): [S]
-  function getState<Sels extends Selectors<S>>(...sels: [...Sels]): [...UnpackSelectors<Sels, S>]
-  function getState(...selector) {
-    return selectorImplement(selector)
-  }
-  function replace(next) {}
-
-  return { useState, dispatch, subscribe, getSnapshot, getState, replace }
+  return { useState, dispatch, subscribe, getSnapshot, refresh }
 }
 
 export default createImmerExternalStore
