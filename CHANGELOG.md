@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.7-0](https://github.com/wangzishun/immer-external-store/compare/v0.0.6...v0.0.7-0) (2023-03-01)
+
+
+### Bug Fixes
+
+* :bug: pkg module change .js file ([93a8ef2](https://github.com/wangzishun/immer-external-store/commit/93a8ef2db22e67d5e8f8a0868b9eb2ba55108c80))
+
 ### [0.0.6](https://github.com/wangzishun/immer-external-store/compare/v0.0.6-0...v0.0.6) (2023-02-27)
 
 
