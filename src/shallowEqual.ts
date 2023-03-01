@@ -6,7 +6,7 @@
 
 const hasOwnProperty = Object.prototype.hasOwnProperty
 
-export const shallowEqual = (a, b) => {
+export function shallowEqual(a, b) {
   if (Object.is(a, b)) {
     return true
   }
@@ -35,7 +35,7 @@ export const shallowEqual = (a, b) => {
   return true
 }
 
-export const arrayShallowEqual = (a, b) => {
+export function arrayShallowEqual(a, b) {
   if (a.length !== b.length) {
     return false
   }

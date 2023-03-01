@@ -2,13 +2,15 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { createImmerExternalStore } from 'immer-external-store'
 
-const Store = createImmerExternalStore({
-  count: 0,
-  hallo: 'hallo-world',
-  users: [{ name: 'luffy' }, { name: 'mingo' }, { name: 'zoro' }],
-  nested: {
-    place: ['Skypiea', 'Water7', 'Fishman Island', 'Dressrosa', 'Shabondy'],
-  },
+const Store = createImmerExternalStore(() => {
+  return {
+    count: 0,
+    hallo: 'hallo-world',
+    users: [{ name: 'luffy' }, { name: 'mingo' }, { name: 'zoro' }],
+    nested: {
+      place: ['Skypiea', 'Water7', 'Fishman Island', 'Dressrosa', 'Shabondy'],
+    },
+  }
 })
 
 function StringPathSelector() {

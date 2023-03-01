@@ -6,6 +6,7 @@ import { createImmerExternalStore } from 'immer-external-store'
 const Store = createImmerExternalStore({
   count: 0,
   list: ['hallo!', 'bro', 'and', 'sis'],
+  increment: () => Store.dispatch((draft) => draft.count++),
 })
 
 // [2]. selector what you want
@@ -24,11 +25,13 @@ function Count() {
 // [3]. dispatch as immer draft
 function SimpleCounterDemo() {
   console.log(SimpleCounterDemo.name, 'render')
+  const [increment, dispatch] = Store.useState('increment')
   return (
     <ul>
       <h1>SimpleCounterDemo</h1>
       <Count />
       <button onClick={() => Store.dispatch((draft) => draft.count++)}>count increment</button>
+      <button onClick={increment}>count increment(from store)</button>
     </ul>
   )
 }

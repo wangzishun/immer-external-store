@@ -3,13 +3,11 @@
 A tiny faster easier react state manager, based immer and useSyncExternalStore, provide two kinds of selector and friendly typescript support.
 
 <a href="https://npmjs.org/package/immer-external-store">
-  <img alt="NPM version" src="https://img.shields.io/npm/v/immer-external-store.svg?style=flat-square">
+  <img alt="NPM version" src="https://badgen.net/npm/v/immer-external-store">
 </a>
 <a href="https://npmjs.org/package/immer-external-store">
-  <img alt="NPM downloads" src="https://img.shields.io/npm/dm/immer-external-store.svg?style=flat-square">
+  <img alt="NPM downloads" src="https://badgen.net/npm/dm/immer-external-store">
 </a>
-
-[![CI](https://github.com/wangzishun/immer-external-store/actions/workflows/ci.yml/badge.svg)](https://github.com/wangzishun/immer-external-store/actions/workflows/ci.yml)
 
 <table>
   <thead>
@@ -48,12 +46,15 @@ A tiny faster easier react state manager, based immer and useSyncExternalStore, 
 ## <a href="https://codesandbox.io/s/github/wangzishun/immer-external-store/tree/master/examples/SimpleCounterDemo" target="_blank">SimpleCounterDemo</a>
 
 ```tsx
+import React from 'react'
+import ReactDOM from 'react-dom/client'
 import { createImmerExternalStore } from 'immer-external-store'
 
 // [1]. create store
 const Store = createImmerExternalStore({
   count: 0,
   list: ['hallo!', 'bro', 'and', 'sis'],
+  increment: () => Store.dispatch((draft) => draft.count++),
 })
 
 // [2]. selector what you want
@@ -70,29 +71,38 @@ function Count() {
 }
 
 // [3]. dispatch as immer draft
-export default function SimpleCounterDemo() {
+function SimpleCounterDemo() {
   console.log(SimpleCounterDemo.name, 'render')
+  const [increment, dispatch] = Store.useState('increment')
   return (
     <ul>
+      <h1>SimpleCounterDemo</h1>
       <Count />
       <button onClick={() => Store.dispatch((draft) => draft.count++)}>count increment</button>
+      <button onClick={increment}>count increment(from store)</button>
     </ul>
   )
 }
+
+ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(<SimpleCounterDemo />)
 ```
 
 ## <a href="https://codesandbox.io/s/github/wangzishun/immer-external-store/tree/master/examples/ComplexDemo" target="_blank">ComplexDemo</a>
 
 ```tsx
+import React from 'react'
+import ReactDOM from 'react-dom/client'
 import { createImmerExternalStore } from 'immer-external-store'
 
-const Store = createImmerExternalStore({
-  count: 0,
-  hallo: 'hallo-world',
-  users: [{ name: 'luffy' }, { name: 'mingo' }, { name: 'zoro' }],
-  nested: {
-    place: ['Skypiea', 'Water7', 'Fishman Island', 'Dressrosa', 'Shabondy'],
-  },
+const Store = createImmerExternalStore(() => {
+  return {
+    count: 0,
+    hallo: 'hallo-world',
+    users: [{ name: 'luffy' }, { name: 'mingo' }, { name: 'zoro' }],
+    nested: {
+      place: ['Skypiea', 'Water7', 'Fishman Island', 'Dressrosa', 'Shabondy'],
+    },
+  }
 })
 
 function StringPathSelector() {
@@ -148,10 +158,11 @@ function Textarea() {
   return <pre contentEditable onBlur={onBlur} dangerouslySetInnerHTML={{ __html: JSON.stringify(state, null, 2) }} />
 }
 
-export default function AdvancedCounter() {
-  console.log(AdvancedCounter.name, 'render')
+function ComplexDemo() {
+  console.log(ComplexDemo.name, 'render')
   return (
     <div>
+      <h1>ComplexDemo</h1>
       <StringPathSelector />
       <FunctionSelector />
       <StringPathAndFunctionSelector />
@@ -161,20 +172,22 @@ export default function AdvancedCounter() {
     </div>
   )
 }
+
+ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(<ComplexDemo />)
 ```
 
 # Installation
 
 ```sh
-npm i immer immer-external-store
+npm i immer-external-store
 ```
 
 ```sh
-yarn add immer immer-external-store
+yarn add immer-external-store
 ```
 
 ```sh
-pnpm add immer immer-external-store
+pnpm add immer-external-store
 ```
 
 # API

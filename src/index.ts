@@ -7,7 +7,6 @@ import { arrayShallowEqual } from './shallowEqual'
 import { Path, PathValue } from './types'
 
 type Recipe<S> = (draft: S) => any
-type Dispatch<S> = (recipeOrPartial: Recipe<S> | Partial<S>) => any
 type Unpacked<T> = T extends (...args: any[]) => infer R ? R : never
 
 type FuncSel<S> = (v: S) => any
@@ -33,39 +32,35 @@ export function createImmerExternalStore<Init extends Initial, S extends UnpackI
   const listeners = new Set<Listener>()
   const getters = new Map<string, any>()
 
-  const notify = () => new Set(listeners).forEach((sub) => sub())
+  function notify(nextState) {
+    STATE = nextState
+    new Set(listeners).forEach((sub) => sub())
+  }
 
-  const subscribe = (listener: Listener) => {
+  function subscribe(listener: Listener) {
     listeners.add(listener)
     return () => listeners.delete(listener)
   }
 
-  const dispatch: Dispatch<S> = async (recipeOrPartial) => {
-    const draft = createDraft(STATE)
+  function dispatch(recipeOrPartial: Recipe<S> | Partial<S>) {
+    const draft = createDraft(STATE) as any
 
     if (typeof recipeOrPartial === 'function') {
-      await recipeOrPartial(draft as any)
-    } else {
-      Object.assign(draft, recipeOrPartial)
+      return Promise.resolve(recipeOrPartial(draft)).then(() => notify(finishDraft(draft)))
     }
 
-    STATE = finishDraft(draft) as any
-
-    notify()
+    notify(finishDraft(Object.assign(draft, recipeOrPartial)))
   }
 
-  const refresh = async (init: Init = initialState) => {
+  function refresh(init: Init = initialState) {
     if (typeof init === 'function') {
-      STATE = await init()
-    } else {
-      STATE = init as any
+      return Promise.resolve(init()).then(notify)
     }
-    notify()
+
+    notify(init)
   }
 
-  refresh(initialState) // immediately refresh
-
-  const selectorImpl = (selectors) => {
+  function selectorImpl(selectors) {
     if (!selectors?.length) return [STATE]
 
     return selectors.map((sel) => {
@@ -87,25 +82,28 @@ export function createImmerExternalStore<Init extends Initial, S extends UnpackI
     })
   }
 
-  const getSnapshot = () => STATE
+  function getSnapshot() {
+    return STATE
+  }
 
-  // function getState(): [S]
-  // function getState<Sels extends Selectors<S>>(...sels: [...Sels]): [...UnpackSelectors<Sels, S>]
   // function getState(...selector) {
   //   return selectorImpl(selector)
   // }
 
-  function useState(): [S, Dispatch<S>]
-  function useState<Sels extends Selectors<S>>(...sels: [...Sels]): [...UnpackSelectors<Sels, S>, Dispatch<S>]
+  function useState(): [S, typeof dispatch]
+  function useState<Sels extends Selectors<S>>(...sels: Sels): [...UnpackSelectors<Sels, S>, typeof dispatch]
   function useState() {
+    const args = arguments
     return useSyncExternalStoreWithSelector(
       subscribe,
       getSnapshot,
       getSnapshot,
-      () => selectorImpl(Array.from(arguments)),
+      () => selectorImpl(Array.from(args)),
       arrayShallowEqual,
     ).concat(dispatch)
   }
+
+  refresh(initialState) // immediately refresh
 
   return { useState, dispatch, subscribe, getSnapshot, refresh }
 }

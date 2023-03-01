@@ -1,9 +1,5 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', { value: true });
-
-var immer = require('immer');
-var withSelector = require('use-sync-external-store/shim/with-selector');
+import { createDraft, finishDraft } from 'immer';
+import { useSyncExternalStoreWithSelector } from 'use-sync-external-store/shim/with-selector';
 
 /**
  *
@@ -61,13 +57,13 @@ function createImmerExternalStore(initialState) {
     };
   }
   function dispatch(recipeOrPartial) {
-    var draft = immer.createDraft(STATE);
+    var draft = createDraft(STATE);
     if (typeof recipeOrPartial === 'function') {
       return Promise.resolve(recipeOrPartial(draft)).then(function () {
-        return notify(immer.finishDraft(draft));
+        return notify(finishDraft(draft));
       });
     }
-    notify(immer.finishDraft(Object.assign(draft, recipeOrPartial)));
+    notify(finishDraft(Object.assign(draft, recipeOrPartial)));
   }
   function refresh() {
     var init = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : initialState;
@@ -99,7 +95,7 @@ function createImmerExternalStore(initialState) {
   }
   function useState() {
     var args = arguments;
-    return withSelector.useSyncExternalStoreWithSelector(subscribe, getSnapshot, getSnapshot, function () {
+    return useSyncExternalStoreWithSelector(subscribe, getSnapshot, getSnapshot, function () {
       return selectorImpl(Array.from(args));
     }, arrayShallowEqual).concat(dispatch);
   }
@@ -113,5 +109,4 @@ function createImmerExternalStore(initialState) {
   };
 }
 
-exports.createImmerExternalStore = createImmerExternalStore;
-exports.default = createImmerExternalStore;
+export { createImmerExternalStore, createImmerExternalStore as default };
