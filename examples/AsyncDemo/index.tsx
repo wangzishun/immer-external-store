@@ -29,11 +29,11 @@ function Count() {
 }
 
 // [3]. dispatch also support async/await
-function SimpleCounterDemo() {
-  console.log(SimpleCounterDemo.name, 'render')
+function AsyncDemo() {
+  console.log(AsyncDemo.name, 'render')
   return (
     <ul>
-      <h1>SimpleCounterDemo</h1>
+      <h1>AsyncDemo</h1>
       <Count />
       <button
         onClick={() =>
@@ -49,4 +49,4 @@ function SimpleCounterDemo() {
   )
 }
 
-ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(<SimpleCounterDemo />)
+ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(<AsyncDemo />)

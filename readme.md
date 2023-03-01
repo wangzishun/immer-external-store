@@ -9,24 +9,20 @@ A tiny faster easier react state manager, based immer and useSyncExternalStore, 
   <img alt="NPM downloads" src="https://badgen.net/npm/dm/immer-external-store">
 </a>
 
-<table>
-  <thead>
-    <tr>
-      <th colspan="3"><center>Live Demos</center></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><a href="https://codesandbox.io/s/github/wangzishun/immer-external-store/tree/master/examples/SimpleCounterDemo" target="_blank">SimpleCounterDemo</a></td>
-      <td><a href="https://codesandbox.io/s/github/wangzishun/immer-external-store/tree/master/examples/ComplexDemo" target="_blank">ComplexDemo</a></td>
-      <td><a href="https://codesandbox.io/s/github/wangzishun/immer-external-store/tree/master/examples/AsyncDemo" target="_blank">AsyncDemo</a></td>
-    </tr>
-  </tbody>
-</table>
+# Examples
+
+- [**SimpleCounterDemo codesandbox**](https://codesandbox.io/s/github/wangzishun/immer-external-store/tree/master/examples/SimpleCounterDemo): [Source](https://github.com/wangzishun/immer-external-store/tree/master/examples/SimpleCounterDemo/index.tsx)
+
+- [**ComplexDemo codesandbox**](https://codesandbox.io/s/github/wangzishun/immer-external-store/tree/master/examples/ComplexDemo): [Source](https://github.com/wangzishun/immer-external-store/tree/master/examples/ComplexDemo/index.tsx)
+
+- [**AsyncDemo codesandbox**](https://codesandbox.io/s/github/wangzishun/immer-external-store/tree/master/examples/AsyncDemo): [Source](https://github.com/wangzishun/immer-external-store/tree/master/examples/AsyncDemo/index.tsx)
+
+- [**TodoUndoRedoDemo codesandbox**](https://codesandbox.io/s/github/wangzishun/immer-external-store/tree/master/examples/TodoUndoRedoDemo): [Source](https://github.com/wangzishun/immer-external-store/tree/master/examples/TodoUndoRedoDemo/index.tsx)
 
 # Summary
 
 - [immer-external-store](#immer-external-store)
+- [Examples](#examples)
 - [Summary](#summary)
 - [Quick start with two examples](#quick-start-with-two-examples)
   - [SimpleCounterDemo](#simplecounterdemo)
