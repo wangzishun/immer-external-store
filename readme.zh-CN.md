@@ -2,9 +2,9 @@
 
 <div align="center">
 
-A easier react state manager, based immer and useSyncExternalStore, provide two kinds of selector and friendly typescript support.
+一个更简单的 react 状态管理器，基于 immer 和 useSyncExternalStore，提供两种选择器以及友好的 typescript 类型支持。
 
-English · [简体中文](./readme.zh-CN.md)
+[English](./readme.zh-CN.md) · 简体中文
 
 <a href="https://npmjs.org/package/immer-external-store">
   <img alt="NPM version" src="https://badgen.net/npm/v/immer-external-store">
@@ -15,7 +15,7 @@ English · [简体中文](./readme.zh-CN.md)
 
 </div>
 
-# Examples
+# 所有的栗子
 
 - [**SimpleCounterDemo codesandbox**](https://codesandbox.io/s/github/wangzishun/immer-external-store/tree/master/examples/SimpleCounterDemo): [Source](https://github.com/wangzishun/immer-external-store/tree/master/examples/SimpleCounterDemo/index.tsx)
 
@@ -28,9 +28,9 @@ English · [简体中文](./readme.zh-CN.md)
 # Summary
 
 - [immer-external-store](#immer-external-store)
-- [Examples](#examples)
+- [所有的栗子](#所有的栗子)
 - [Summary](#summary)
-- [Quick start with two examples](#quick-start-with-two-examples)
+- [两个例子快速上手](#两个例子快速上手)
   - [SimpleCounterDemo](#simplecounterdemo)
   - [ComplexDemo](#complexdemo)
 - [Installation](#installation)
@@ -43,7 +43,7 @@ English · [简体中文](./readme.zh-CN.md)
 - [Contributing](#contributing)
 - [License](#license)
 
-# Quick start with two examples
+# 两个例子快速上手
 
 ## <a href="https://codesandbox.io/s/github/wangzishun/immer-external-store/tree/master/examples/SimpleCounterDemo" target="_blank">SimpleCounterDemo</a>
 
@@ -52,14 +52,14 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { createImmerExternalStore } from 'immer-external-store'
 
-// [1]. create store
+// [1]. 创建 store
 const Store = createImmerExternalStore({
   count: 0,
   list: ['hallo!', 'bro', 'and', 'sis'],
   increment: () => Store.dispatch((draft) => draft.count++),
 })
 
-// [2]. selector what you want
+// [2]. 使用 useState 并选择你想要的状态
 function Count() {
   console.log(Count.name, 'render')
 
@@ -72,7 +72,7 @@ function Count() {
   )
 }
 
-// [3]. dispatch as immer draft
+// [3]. 通过 dispatch 来修改状态，类似 immer 的 produce
 function SimpleCounterDemo() {
   console.log(SimpleCounterDemo.name, 'render')
   const [increment, dispatch] = Store.useState('increment')
@@ -196,16 +196,16 @@ pnpm add immer-external-store
 
 ## `createImmerExternalStore`
 
-A store must be created before using. `createImmerExternalStore` accept two types of parameters for `initialState`, and return store instance.
+使用前必须先创建 store。`createImmerExternalStore` 接受两种类型的参数，并返回 store 实例。
 
-1. If received common object
+1. 如果接收到的是一个普通对象
 
    ```ts
    import { createImmerExternalStore } from 'immer-external-store'
    const instance = createImmerExternalStore(YourStateObject)
    ```
 
-2. If received function or async/await promise, will be executed and updated nextTick, it means there is "undefined" before update.
+2. 如果接收到的是一个函数或者异步函数，会在下一次 tick 时执行，也就是说在更新前会有一个 undefined 的状态。
    <a href="https://codesandbox.io/s/github/wangzishun/immer-external-store/tree/master/examples/AsyncDemo" target="_blank">AsyncDemo</a>
 
    ```ts
@@ -217,21 +217,21 @@ A store must be created before using. `createImmerExternalStore` accept two type
 
 ## `useState`
 
-Determine the return tuple according to the input parameters, `[...state, dispatch]`. Designed to be used in `React.useState`.
+根据输入参数的不同，返回不同的元组，`[...state, dispatch]`。设计上尽量保持和 `React.useState` 一致。
 
-1.  If received empty, return full-state and dispatch
+1.  如果没有传入参数，返回整个状态和 dispatch
 
     ```ts
     const [fullState, dispatch] = instance.useState()
     ```
 
-2.  If received `DotPath` string rest, return value rest and dispatch
+2.  如果传入的是字符串，会根据 `.` 来访问具体路径，然后返回对应的值和 dispatch
 
     ```ts
     const [firstName, lastName, dispatch] = instance.useState('path.to.first.name', 'path.to.last.name')
     ```
 
-3.  If received `Selector` function rest, return selected rest and dispatch
+3.  如果传入的是函数，会将整个状态作为参数传入，返回函数的返回值和 dispatch
 
     ```ts
     const [firstName, lastName, dispatch] = instance.useState(
@@ -242,7 +242,7 @@ Determine the return tuple according to the input parameters, `[...state, dispat
 
 ## `dispatch`
 
-It is based `immer.produce`, . [if you don't know what immer is, this way please](https://immerjs.github.io/immer/produce/#example)
+基于 immer 的 produce，[如果你不知道 immer 是什么，这里请看](https://immerjs.github.io/immer/produce/#example)
 
 ```ts
 instance.dispatch((draft) => draft.count++) // do anything you want, recommend this way
@@ -264,7 +264,7 @@ instance.dispatch((draft) => ({ hallo: 'world' }))
 
 ## `getSnapshot`
 
-Return full state
+返回当前的状态快照，不会触发组件更新
 
 ```ts
 store.getSnapshot()
@@ -272,7 +272,7 @@ store.getSnapshot()
 
 ## `refresh`
 
-Refresh whole state, the `initialState` is used by default. PS: you can give a new initialState if you want
+刷新整个状态，如果不传入参数，会使用初始化时的 initialState。PS：你可以传入一个新的 initialState
 
 ```ts
 store.refresh() // store.refresh(anotherInitialState)
