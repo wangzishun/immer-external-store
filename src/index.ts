@@ -21,23 +21,25 @@ type UnpackSelector<Sel, S> = Sel extends FuncSel<S>
 
 type UnpackSelectors<Sels, S> = { [K in keyof Sels]: UnpackSelector<Sels[K], S> }
 
-type Listener = (...args: any[]) => any
+type Listener<S> = (state: S) => any
 
 type Initial = Object | (() => Object) | (() => Promise<Object>)
 type UnpackInitial<I> = I extends () => Promise<infer R> ? R : I extends () => infer R ? R : I
 
+const PromiseResolve = Promise.resolve
+
 export function createImmerExternalStore<Init extends Initial, S extends UnpackInitial<Init>>(initialState: Init) {
   let STATE = {} as S
 
-  const listeners = new Set<Listener>()
+  const listeners = new Set<Listener<S>>()
   const getters = new Map<string, any>()
 
   function notify(nextState) {
     STATE = nextState
-    new Set(listeners).forEach((sub) => sub())
+    new Set(listeners).forEach((sub) => sub(STATE))
   }
 
-  function subscribe(listener: Listener) {
+  function subscribe(listener: Listener<S>) {
     listeners.add(listener)
     return () => listeners.delete(listener)
   }
@@ -46,22 +48,23 @@ export function createImmerExternalStore<Init extends Initial, S extends UnpackI
     const draft = createDraft(STATE) as any
 
     if (typeof recipeOrPartial === 'function') {
-      return Promise.resolve(recipeOrPartial(draft)).then(() => notify(finishDraft(draft)))
+      return PromiseResolve(recipeOrPartial(draft)).then(() => notify(finishDraft(draft)))
     }
 
     notify(finishDraft(Object.assign(draft, recipeOrPartial)))
   }
 
-  function refresh(init: Init = initialState) {
+  function refresh(init: Init) {
+    init = init || initialState
     if (typeof init === 'function') {
-      return Promise.resolve(init()).then(notify)
+      return PromiseResolve(init()).then(notify)
     }
 
     notify(init)
   }
 
   function selectorImpl(selectors) {
-    if (!selectors?.length) return [STATE]
+    if (!selectors || !selectors.length) return [STATE]
 
     return selectors.map((sel) => {
       let picker = sel // as function selector

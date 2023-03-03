@@ -19,6 +19,6 @@ export declare function createImmerExternalStore<Init extends Initial, S extends
     dispatch: (recipeOrPartial: Recipe<S> | Partial<S>) => Promise<void> | undefined;
     subscribe: (listener: Listener) => () => boolean;
     getSnapshot: () => S;
-    refresh: (init?: Init) => Promise<void> | undefined;
+    refresh: (init: Init) => Promise<void> | undefined;
 };
 export default createImmerExternalStore;

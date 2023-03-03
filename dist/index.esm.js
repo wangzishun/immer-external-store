@@ -40,6 +40,7 @@ function arrayShallowEqual(a, b) {
   return true;
 }
 
+var PromiseResolve = Promise.resolve;
 function createImmerExternalStore(initialState) {
   var STATE = {};
   var listeners = new Set();
@@ -59,21 +60,21 @@ function createImmerExternalStore(initialState) {
   function dispatch(recipeOrPartial) {
     var draft = createDraft(STATE);
     if (typeof recipeOrPartial === 'function') {
-      return Promise.resolve(recipeOrPartial(draft)).then(function () {
+      return PromiseResolve(recipeOrPartial(draft)).then(function () {
         return notify(finishDraft(draft));
       });
     }
     notify(finishDraft(Object.assign(draft, recipeOrPartial)));
   }
-  function refresh() {
-    var init = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : initialState;
+  function refresh(init) {
+    init = init || initialState;
     if (typeof init === 'function') {
-      return Promise.resolve(init()).then(notify);
+      return PromiseResolve(init()).then(notify);
     }
     notify(init);
   }
   function selectorImpl(selectors) {
-    if (!(selectors !== null && selectors !== void 0 && selectors.length)) return [STATE];
+    if (!selectors || !selectors.length) return [STATE];
     return selectors.map(function (sel) {
       var picker = sel; // as function selector
       if (typeof sel === 'string') {
