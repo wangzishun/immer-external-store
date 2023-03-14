@@ -17,13 +17,13 @@
 
 # 所有的栗子
 
-- [**SimpleCounterDemo codesandbox**](https://codesandbox.io/s/github/wangzishun/immer-external-store/tree/master/examples/SimpleCounterDemo): [Source](https://github.com/wangzishun/immer-external-store/tree/master/examples/SimpleCounterDemo/index.tsx)
+- [**SimpleCounterDemo codesandbox**](https://codesandbox.io/s/github/wangzishun/immer-external-store/tree/main/examples/SimpleCounterDemo): [Source](https://github.com/wangzishun/immer-external-store/tree/main/examples/SimpleCounterDemo/index.tsx)
 
-- [**ComplexDemo codesandbox**](https://codesandbox.io/s/github/wangzishun/immer-external-store/tree/master/examples/ComplexDemo): [Source](https://github.com/wangzishun/immer-external-store/tree/master/examples/ComplexDemo/index.tsx)
+- [**ComplexDemo codesandbox**](https://codesandbox.io/s/github/wangzishun/immer-external-store/tree/main/examples/ComplexDemo): [Source](https://github.com/wangzishun/immer-external-store/tree/main/examples/ComplexDemo/index.tsx)
 
-- [**AsyncDemo codesandbox**](https://codesandbox.io/s/github/wangzishun/immer-external-store/tree/master/examples/AsyncDemo): [Source](https://github.com/wangzishun/immer-external-store/tree/master/examples/AsyncDemo/index.tsx)
+- [**AsyncDemo codesandbox**](https://codesandbox.io/s/github/wangzishun/immer-external-store/tree/main/examples/AsyncDemo): [Source](https://github.com/wangzishun/immer-external-store/tree/main/examples/AsyncDemo/index.tsx)
 
-- [**TodoUndoRedoDemo codesandbox**](https://codesandbox.io/s/github/wangzishun/immer-external-store/tree/master/examples/TodoUndoRedoDemo): [Source](https://github.com/wangzishun/immer-external-store/tree/master/examples/TodoUndoRedoDemo/index.tsx)
+- [**TodoUndoRedoDemo codesandbox**](https://codesandbox.io/s/github/wangzishun/immer-external-store/tree/main/examples/TodoUndoRedoDemo): [Source](https://github.com/wangzishun/immer-external-store/tree/main/examples/TodoUndoRedoDemo/index.tsx)
 
 # Summary
 
@@ -45,7 +45,7 @@
 
 # 两个例子快速上手
 
-## <a href="https://codesandbox.io/s/github/wangzishun/immer-external-store/tree/master/examples/SimpleCounterDemo" target="_blank">SimpleCounterDemo</a>
+## <a href="https://codesandbox.io/s/github/wangzishun/immer-external-store/tree/main/examples/SimpleCounterDemo" target="_blank">SimpleCounterDemo</a>
 
 ```tsx
 import React from 'react'
@@ -89,7 +89,7 @@ function SimpleCounterDemo() {
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(<SimpleCounterDemo />)
 ```
 
-## <a href="https://codesandbox.io/s/github/wangzishun/immer-external-store/tree/master/examples/ComplexDemo" target="_blank">ComplexDemo</a>
+## <a href="https://codesandbox.io/s/github/wangzishun/immer-external-store/tree/main/examples/ComplexDemo" target="_blank">ComplexDemo</a>
 
 ```tsx
 import React from 'react'
@@ -206,7 +206,7 @@ pnpm add immer-external-store
    ```
 
 2. 如果接收到的是一个函数或者异步函数，会在下一次 tick 时执行，也就是说在更新前会有一个 undefined 的状态。
-   <a href="https://codesandbox.io/s/github/wangzishun/immer-external-store/tree/master/examples/AsyncDemo" target="_blank">AsyncDemo</a>
+   <a href="https://codesandbox.io/s/github/wangzishun/immer-external-store/tree/main/examples/AsyncDemo" target="_blank">AsyncDemo</a>
 
    ```ts
    import { createImmerExternalStore } from 'immer-external-store'

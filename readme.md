@@ -17,13 +17,13 @@ English · [简体中文](./readme.zh-CN.md)
 
 # Examples
 
-- [**SimpleCounterDemo codesandbox**](https://codesandbox.io/s/github/wangzishun/immer-external-store/tree/master/examples/SimpleCounterDemo): [Source](https://github.com/wangzishun/immer-external-store/tree/master/examples/SimpleCounterDemo/index.tsx)
+- [**SimpleCounterDemo codesandbox**](https://codesandbox.io/s/github/wangzishun/immer-external-store/tree/main/examples/SimpleCounterDemo): [Source](https://github.com/wangzishun/immer-external-store/tree/main/examples/SimpleCounterDemo/index.tsx)
 
-- [**ComplexDemo codesandbox**](https://codesandbox.io/s/github/wangzishun/immer-external-store/tree/master/examples/ComplexDemo): [Source](https://github.com/wangzishun/immer-external-store/tree/master/examples/ComplexDemo/index.tsx)
+- [**ComplexDemo codesandbox**](https://codesandbox.io/s/github/wangzishun/immer-external-store/tree/main/examples/ComplexDemo): [Source](https://github.com/wangzishun/immer-external-store/tree/main/examples/ComplexDemo/index.tsx)
 
-- [**AsyncDemo codesandbox**](https://codesandbox.io/s/github/wangzishun/immer-external-store/tree/master/examples/AsyncDemo): [Source](https://github.com/wangzishun/immer-external-store/tree/master/examples/AsyncDemo/index.tsx)
+- [**AsyncDemo codesandbox**](https://codesandbox.io/s/github/wangzishun/immer-external-store/tree/main/examples/AsyncDemo): [Source](https://github.com/wangzishun/immer-external-store/tree/main/examples/AsyncDemo/index.tsx)
 
-- [**TodoUndoRedoDemo codesandbox**](https://codesandbox.io/s/github/wangzishun/immer-external-store/tree/master/examples/TodoUndoRedoDemo): [Source](https://github.com/wangzishun/immer-external-store/tree/master/examples/TodoUndoRedoDemo/index.tsx)
+- [**TodoUndoRedoDemo codesandbox**](https://codesandbox.io/s/github/wangzishun/immer-external-store/tree/main/examples/TodoUndoRedoDemo): [Source](https://github.com/wangzishun/immer-external-store/tree/main/examples/TodoUndoRedoDemo/index.tsx)
 
 # Summary
 
@@ -45,7 +45,7 @@ English · [简体中文](./readme.zh-CN.md)
 
 # Quick start with two examples
 
-## <a href="https://codesandbox.io/s/github/wangzishun/immer-external-store/tree/master/examples/SimpleCounterDemo" target="_blank">SimpleCounterDemo</a>
+## <a href="https://codesandbox.io/s/github/wangzishun/immer-external-store/tree/main/examples/SimpleCounterDemo" target="_blank">SimpleCounterDemo</a>
 
 ```tsx
 import React from 'react'
@@ -89,7 +89,7 @@ function SimpleCounterDemo() {
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(<SimpleCounterDemo />)
 ```
 
-## <a href="https://codesandbox.io/s/github/wangzishun/immer-external-store/tree/master/examples/ComplexDemo" target="_blank">ComplexDemo</a>
+## <a href="https://codesandbox.io/s/github/wangzishun/immer-external-store/tree/main/examples/ComplexDemo" target="_blank">ComplexDemo</a>
 
 ```tsx
 import React from 'react'
@@ -206,7 +206,7 @@ A store must be created before using. `createImmerExternalStore` accept two type
    ```
 
 2. If received function or async/await promise, will be executed and updated nextTick, it means there is "undefined" before update.
-   <a href="https://codesandbox.io/s/github/wangzishun/immer-external-store/tree/master/examples/AsyncDemo" target="_blank">AsyncDemo</a>
+   <a href="https://codesandbox.io/s/github/wangzishun/immer-external-store/tree/main/examples/AsyncDemo" target="_blank">AsyncDemo</a>
 
    ```ts
    import { createImmerExternalStore } from 'immer-external-store'
