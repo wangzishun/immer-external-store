@@ -23,12 +23,12 @@ type UnpackSelectors<Sels, S> = { [K in keyof Sels]: UnpackSelector<Sels[K], S> 
 
 type Listener<S> = (state: S) => any
 
-type Initial = Object | (() => Object) | (() => Promise<Object>)
-type UnpackInitial<I> = I extends () => Promise<infer R> ? R : I extends () => infer R ? R : I
+type Initial<T> = Object | ((T) => Object) | ((T) => Promise<Object>)
+type ExtractState<I> = I extends () => Promise<infer R> ? R : I extends () => infer R ? R : I
 
 const PromiseResolve = Promise.resolve
 
-export function createImmerExternalStore<Init extends Initial, S extends UnpackInitial<Init>>(initialState: Init) {
+export function createImmerExternalStore<Init extends Initial<any>, S extends ExtractState<Init>>(initializer: Init) {
   let STATE = {} as S
 
   const listeners = new Set<Listener<S>>()
@@ -55,9 +55,9 @@ export function createImmerExternalStore<Init extends Initial, S extends UnpackI
   }
 
   function refresh(init: Init) {
-    init = init || initialState
+    init = init || initializer
     if (typeof init === 'function') {
-      return PromiseResolve(init()).then(notify)
+      return PromiseResolve(init(instance)).then(notify)
     }
 
     notify(init)
@@ -106,9 +106,11 @@ export function createImmerExternalStore<Init extends Initial, S extends UnpackI
     ).concat(dispatch)
   }
 
-  refresh(initialState) // immediately refresh
+  refresh(initializer) // immediately refresh
 
-  return { useState, dispatch, subscribe, getSnapshot, refresh }
+  const instance = { useState, dispatch, subscribe, getSnapshot, refresh }
+
+  return instance
 }
 
 export default createImmerExternalStore
