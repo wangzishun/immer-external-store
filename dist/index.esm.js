@@ -40,52 +40,73 @@ function arrayShallowEqual(a, b) {
   return true;
 }
 
-var PromiseResolve = Promise.resolve;
-function createImmerExternalStore(initialState) {
+function createImmerExternalStore(initializer) {
   var STATE = {};
   var listeners = new Set();
-  var getters = new Map();
+  var cachedGetters = new Map();
+  /**
+   * update STATE and notify all listeners
+   * @param nextState
+   */
   function notify(nextState) {
     STATE = nextState;
     new Set(listeners).forEach(function (sub) {
-      return sub();
+      return sub(STATE);
     });
   }
   function subscribe(listener) {
     listeners.add(listener);
-    return function () {
-      return listeners["delete"](listener);
+    return function unsubscribe() {
+      listeners["delete"](listener);
     };
   }
+  /**
+   *
+   * @param recipeOrPartial recipe function or partial state
+   */
   function dispatch(recipeOrPartial) {
     var draft = createDraft(STATE);
     if (typeof recipeOrPartial === 'function') {
-      return PromiseResolve(recipeOrPartial(draft)).then(function () {
+      return Promise.resolve(recipeOrPartial(draft)).then(function () {
         return notify(finishDraft(draft));
       });
     }
     notify(finishDraft(Object.assign(draft, recipeOrPartial)));
   }
+  /**
+   * refresh Store, if init is a function, it will be called async with instance
+   * @param init
+   */
   function refresh(init) {
-    init = init || initialState;
+    init = init || initializer;
     if (typeof init === 'function') {
-      return PromiseResolve(init()).then(notify);
+      return Promise.resolve(init(instance)).then(notify);
     }
     notify(init);
   }
+  /**
+   * support string selector and function selector
+   * @param selectors
+   */
   function selectorImpl(selectors) {
     if (!selectors || !selectors.length) return [STATE];
     return selectors.map(function (sel) {
-      var picker = sel; // as function selector
+      var getter = sel;
+      /**
+       * convert string selector to function
+       *
+       * TODO: cache each constructed function may cause memory overflow or leak
+       * sel.split('.').reduce((o, k) => o && o[k], STATE)
+       */
       if (typeof sel === 'string') {
-        picker = getters.get(sel);
-        if (!picker) {
-          picker = new Function('o', "return o[\"".concat(sel.split('.').join('"]["'), "\"];"));
-          getters.set(sel, picker);
+        getter = cachedGetters.get(sel);
+        if (!getter) {
+          getter = new Function('o', "return o[\"".concat(sel.split('.').join('"]["'), "\"];"));
+          cachedGetters.set(sel, getter);
         }
       }
       try {
-        return picker(STATE);
+        return getter(STATE);
       } catch (error) {
         return undefined;
       }
@@ -100,14 +121,15 @@ function createImmerExternalStore(initialState) {
       return selectorImpl(Array.from(args));
     }, arrayShallowEqual).concat(dispatch);
   }
-  refresh(initialState); // immediately refresh
-  return {
+  var instance = {
     useState: useState,
     dispatch: dispatch,
     subscribe: subscribe,
     getSnapshot: getSnapshot,
     refresh: refresh
   };
+  refresh(initializer); // immediately refresh
+  return instance;
 }
 
 export { createImmerExternalStore, createImmerExternalStore as default };
